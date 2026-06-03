@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ubuntu:
+    name: Ubuntu
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: sbt
+
+      - name: Set up sbt
+        uses: sbt/setup-sbt@v1
+
+      - name: Install native dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            clang \
+            cmake \
+            git \
+            libasound2-dev \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libx11-dev \
+            libxcursor-dev \
+            libxi-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            pkg-config
+
+      - name: Build raylib
+        run: |
+          git clone --depth 1 --branch 5.5 https://github.com/raysan5/raylib.git /tmp/raylib
+          cmake -B /tmp/raylib/build -S /tmp/raylib -DBUILD_SHARED_LIBS=ON -DBUILD_EXAMPLES=OFF
+          cmake --build /tmp/raylib/build --parallel 2
+          sudo cmake --install /tmp/raylib/build
+          sudo ldconfig
+
+      - name: Compile and link examples
+        run: sbt "all core/compile helloWindow/nativeLink bouncingBall/nativeLink keyboardInput/nativeLink rlglTriangle/nativeLink shapesGallery/nativeLink textureChecker/nativeLink basic3d/nativeLink camera2d/nativeLink renderTexture/nativeLink"
