@@ -16,7 +16,6 @@ C interop layer. Write game loops and graphics code in Scala, compile to a
 standalone ELF binary, ship it.
 
 > ***VERY*** early experimental beta! expect things to **break!**
-
 <br clear="left"/>
 
 ---
