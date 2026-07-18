@@ -1,8 +1,6 @@
-# rayscal
+<img src="assets/rayscal.png" alt="rayscal" width="160" align="left" />
 
-<p align="center">
-  <img src="assets/rayscal.png" alt="rayscal logo" width="400" />
-</p>
+# rayscal
 
 Scala Native bindings for [raylib](https://www.raylib.com/) 6.0.
 
@@ -16,6 +14,10 @@ rayscal wraps raylib's C API in idiomatic Scala, producing a single native binar
 via Scala Native. No JVM at runtime, no GC pauses, no FFI overhead beyond the
 C interop layer. Write game loops and graphics code in Scala, compile to a
 standalone ELF binary, ship it.
+
+<br clear="left"/>
+
+---
 
 ## What's in the box
 
@@ -70,6 +72,8 @@ sbt run
 
 See [BUILDING.md](BUILDING.md) for detailed setup instructions, troubleshooting,
 and how to use rayscal from your own sbt project.
+
+---
 
 ## Examples
 
@@ -133,6 +137,8 @@ rayscal/
       rayscal.c             # C shims for ABI-sensitive struct-by-value calls
   examples/                 # 11 example programs
 ```
+
+---
 
 ## Architecture
 
@@ -214,12 +220,16 @@ Zone:
 The raw layer is a direct map of the C API. You'll need to handle `Zone`,
 `CString`, and struct pointers yourself.
 
+---
+
 ## Links
 
 - [BUILDING.md](BUILDING.md) -- build instructions, project setup, troubleshooting
 - [raylib documentation](https://www.raylib.com/)
 - [Scala Native](https://scala-native.org)
 - [raylib GitHub](https://github.com/raysan5/raylib)
+
+---
 
 ## License
 
