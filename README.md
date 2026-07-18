@@ -1,10 +1,10 @@
 <img src="assets/rayscal.png" alt="rayscal" width="160" align="left" />
 
-# rayscal
+### rayscal
 
 Scala Native bindings for [raylib](https://www.raylib.com/) 6.0.
 
-[![CI](https://github.com/RobertFlexx/rayscal/actions/workflows/ci.yml/badge.svg)](https://github.com/rayscal/rayscal/actions)
+[![CI](https://github.com/RobertFlexx/rayscal/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertFlexx/rayscal/actions)
 [![Scala 3](https://img.shields.io/badge/Scala-3.7-DC322F.svg)](https://scala-lang.org)
 [![Scala Native](https://img.shields.io/badge/Scala%20Native-0.5-blueviolet.svg)](https://scala-native.org)
 [![raylib](https://img.shields.io/badge/raylib-6.0-ff6347.svg)](https://www.raylib.com/)
