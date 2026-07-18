@@ -178,3 +178,9 @@ package object raw:
     scala.scalanative.unsafe.CInt,
     scala.scalanative.unsafe.Ptr[Byte]
   ]
+
+  type FilePathList = scala.scalanative.unsafe.CStruct3[
+    scala.scalanative.unsafe.CUnsignedInt,
+    scala.scalanative.unsafe.CUnsignedInt,
+    scala.scalanative.unsafe.Ptr[scala.scalanative.unsafe.CString]
+  ]

@@ -1,61 +1,88 @@
 package rayscal
 
-import rayscal.raw.Raylib
+import rayscal.raw.{Raylib, RayscalNative}
+import scala.scalanative.unsafe.Zone
 
 object Shapes3D:
   def line(start: Vector3, end: Vector3, color: Color): Unit =
-    Raylib.DrawLine3D(start, end, color)
+    Zone:
+      RayscalNative.DrawLine3D(NativeCopies.vector3(start), NativeCopies.vector3(end), NativeCopies.color(color))
 
   def point(position: Vector3, color: Color): Unit =
-    Raylib.DrawPoint3D(position, color)
+    Zone:
+      RayscalNative.DrawPoint3D(NativeCopies.vector3(position), NativeCopies.color(color))
 
   def circle(center: Vector3, radius: Float, rotationAxis: Vector3, rotationAngle: Float, color: Color): Unit =
-    Raylib.DrawCircle3D(center, radius, rotationAxis, rotationAngle, color)
+    Zone:
+      RayscalNative.DrawCircle3D(NativeCopies.vector3(center), radius, NativeCopies.vector3(rotationAxis), rotationAngle, NativeCopies.color(color))
 
   def triangle(v1: Vector3, v2: Vector3, v3: Vector3, color: Color): Unit =
-    Raylib.DrawTriangle3D(v1, v2, v3, color)
+    Zone:
+      RayscalNative.DrawTriangle3D(NativeCopies.vector3(v1), NativeCopies.vector3(v2), NativeCopies.vector3(v3), NativeCopies.color(color))
 
   def cube(position: Vector3, width: Float, height: Float, length: Float, color: Color): Unit =
-    Raylib.DrawCube(position, width, height, length, color)
+    Zone:
+      RayscalNative.DrawCube(NativeCopies.vector3(position), width, height, length, NativeCopies.color(color))
 
   def cube(position: Vector3, size: Vector3, color: Color): Unit =
-    Raylib.DrawCubeV(position, size, color)
+    Zone:
+      RayscalNative.DrawCubeV(NativeCopies.vector3(position), NativeCopies.vector3(size), NativeCopies.color(color))
 
   def cubeWires(position: Vector3, width: Float, height: Float, length: Float, color: Color): Unit =
-    Raylib.DrawCubeWires(position, width, height, length, color)
+    Zone:
+      RayscalNative.DrawCubeWires(NativeCopies.vector3(position), width, height, length, NativeCopies.color(color))
 
   def cubeWires(position: Vector3, size: Vector3, color: Color): Unit =
-    Raylib.DrawCubeWiresV(position, size, color)
+    Zone:
+      RayscalNative.DrawCubeWiresV(NativeCopies.vector3(position), NativeCopies.vector3(size), NativeCopies.color(color))
 
   def sphere(center: Vector3, radius: Float, color: Color): Unit =
-    Raylib.DrawSphere(center, radius, color)
+    Zone:
+      RayscalNative.DrawSphere(NativeCopies.vector3(center), radius, NativeCopies.color(color))
 
   def sphere(center: Vector3, radius: Float, rings: Int, slices: Int, color: Color): Unit =
-    Raylib.DrawSphereEx(center, radius, rings, slices, color)
+    Zone:
+      RayscalNative.DrawSphereEx(NativeCopies.vector3(center), radius, rings, slices, NativeCopies.color(color))
 
   def sphereWires(center: Vector3, radius: Float, rings: Int, slices: Int, color: Color): Unit =
-    Raylib.DrawSphereWires(center, radius, rings, slices, color)
+    Zone:
+      RayscalNative.DrawSphereWires(NativeCopies.vector3(center), radius, rings, slices, NativeCopies.color(color))
 
   def cylinder(position: Vector3, radiusTop: Float, radiusBottom: Float, height: Float, slices: Int, color: Color): Unit =
-    Raylib.DrawCylinder(position, radiusTop, radiusBottom, height, slices, color)
+    Zone:
+      RayscalNative.DrawCylinder(NativeCopies.vector3(position), radiusTop, radiusBottom, height, slices, NativeCopies.color(color))
 
   def cylinder(start: Vector3, end: Vector3, startRadius: Float, endRadius: Float, sides: Int, color: Color): Unit =
-    Raylib.DrawCylinderEx(start, end, startRadius, endRadius, sides, color)
+    Zone:
+      RayscalNative.DrawCylinderEx(NativeCopies.vector3(start), NativeCopies.vector3(end), startRadius, endRadius, sides, NativeCopies.color(color))
 
   def cylinderWires(position: Vector3, radiusTop: Float, radiusBottom: Float, height: Float, slices: Int, color: Color): Unit =
-    Raylib.DrawCylinderWires(position, radiusTop, radiusBottom, height, slices, color)
+    Zone:
+      RayscalNative.DrawCylinderWires(NativeCopies.vector3(position), radiusTop, radiusBottom, height, slices, NativeCopies.color(color))
+
+  def cylinderWires(start: Vector3, end: Vector3, startRadius: Float, endRadius: Float, sides: Int, color: Color): Unit =
+    Zone:
+      RayscalNative.DrawCylinderWiresEx(NativeCopies.vector3(start), NativeCopies.vector3(end), startRadius, endRadius, sides, NativeCopies.color(color))
 
   def capsule(start: Vector3, end: Vector3, radius: Float, slices: Int, rings: Int, color: Color): Unit =
-    Raylib.DrawCapsule(start, end, radius, slices, rings, color)
+    Zone:
+      RayscalNative.DrawCapsule(NativeCopies.vector3(start), NativeCopies.vector3(end), radius, slices, rings, NativeCopies.color(color))
 
   def capsuleWires(start: Vector3, end: Vector3, radius: Float, slices: Int, rings: Int, color: Color): Unit =
-    Raylib.DrawCapsuleWires(start, end, radius, slices, rings, color)
+    Zone:
+      RayscalNative.DrawCapsuleWires(NativeCopies.vector3(start), NativeCopies.vector3(end), radius, slices, rings, NativeCopies.color(color))
 
   def plane(center: Vector3, size: Vector2, color: Color): Unit =
-    Raylib.DrawPlane(center, size, color)
+    Zone:
+      RayscalNative.DrawPlane(NativeCopies.vector3(center), NativeCopies.vector2(size), NativeCopies.color(color))
 
   def ray(ray: Ray, color: Color): Unit =
-    Raylib.DrawRay(ray, color)
+    Zone:
+      RayscalNative.DrawRay(NativeCopies.ray(ray), NativeCopies.color(color))
+
+  def boundingBox(box: BoundingBox, color: Color): Unit =
+    Zone:
+      RayscalNative.DrawBoundingBox(NativeCopies.boundingBox(box), NativeCopies.color(color))
 
   def grid(slices: Int, spacing: Float): Unit =
     Raylib.DrawGrid(slices, spacing)

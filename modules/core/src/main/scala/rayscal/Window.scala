@@ -1,12 +1,13 @@
 package rayscal
 
-import rayscal.raw.Raylib
+import rayscal.raw.{Raylib, RayscalNative}
 import scala.scalanative.unsafe.*
 import scala.scalanative.unsigned.*
 
 object Window:
   def withWindow(width: Int, height: Int, title: String)(body: Zone ?=> Unit): Unit =
     Zone:
+      RaylibAbi.validate()
       Raylib.InitWindow(width, height, toCString(title))
       try body
       finally Raylib.CloseWindow()
@@ -38,6 +39,16 @@ object Window:
 
   def setOpacity(opacity: Float): Unit =
     Raylib.SetWindowOpacity(opacity)
+
+  def position: Vector2 =
+    val out = stackalloc[Vector2]()
+    RayscalNative.GetWindowPosition(out)
+    !out
+
+  def dpiScale: Vector2 =
+    val out = stackalloc[Vector2]()
+    RayscalNative.GetWindowScaleDPI(out)
+    !out
 
   def toggleFullscreen(): Unit =
     Raylib.ToggleFullscreen()
@@ -85,3 +96,30 @@ object Config:
 
   def setTraceLogLevel(level: Int): Unit =
     Raylib.SetTraceLogLevel(level)
+
+object Monitors:
+  def count: Int =
+    Raylib.GetMonitorCount()
+
+  def current: Int =
+    Raylib.GetCurrentMonitor()
+
+  def position(monitor: Int): Vector2 =
+    val out = stackalloc[Vector2]()
+    RayscalNative.GetMonitorPosition(out, monitor)
+    !out
+
+  def width(monitor: Int): Int =
+    Raylib.GetMonitorWidth(monitor)
+
+  def height(monitor: Int): Int =
+    Raylib.GetMonitorHeight(monitor)
+
+  def physicalWidth(monitor: Int): Int =
+    Raylib.GetMonitorPhysicalWidth(monitor)
+
+  def physicalHeight(monitor: Int): Int =
+    Raylib.GetMonitorPhysicalHeight(monitor)
+
+  def refreshRate(monitor: Int): Int =
+    Raylib.GetMonitorRefreshRate(monitor)

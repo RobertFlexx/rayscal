@@ -1,10 +1,18 @@
 package rayscal
 
+import rayscal.raw.{Raylib, RayscalNative}
 import scala.scalanative.unsafe.*
 
 object CameraProjection:
   val Perspective: Int = 0
   val Orthographic: Int = 1
+
+object CameraModes:
+  val Custom: Int = 0
+  val Free: Int = 1
+  val Orbital: Int = 2
+  val FirstPerson: Int = 3
+  val ThirdPerson: Int = 4
 
 object Cameras:
   def camera3D(position: Vector3, target: Vector3, up: Vector3, fovy: Float, projection: Int)(using zone: Zone): Camera3D =
@@ -33,3 +41,10 @@ object Cameras:
     (!camera)._5 = rotation
     (!camera)._6 = zoom
     !camera
+
+  def update(camera: Ptr[Camera3D], mode: Int): Unit =
+    Raylib.UpdateCamera(camera, mode)
+
+  def updatePro(camera: Ptr[Camera3D], movement: Vector3, rotation: Vector3, zoom: Float): Unit =
+    Zone:
+      RayscalNative.UpdateCameraPro(camera, NativeCopies.vector3(movement), NativeCopies.vector3(rotation), zoom)

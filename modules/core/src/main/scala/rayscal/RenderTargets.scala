@@ -26,29 +26,13 @@ object RenderTargets:
     try body(target)
     finally unload(target)
 
-  def texture(target: RenderTexture2D)(using zone: Zone): Texture2D =
+  def texture(target: RenderTexture2D): TextureView =
     target.requireLive()
-    val _ = zone
-    val rawTarget = !target.ptr
-    val texture = stackalloc[Texture2D]()
-    (!texture)._1 = rawTarget._2
-    (!texture)._2 = rawTarget._3
-    (!texture)._3 = rawTarget._4
-    (!texture)._4 = rawTarget._5
-    (!texture)._5 = rawTarget._6
-    !texture
+    new TextureView(target, false)
 
-  def depth(target: RenderTexture2D)(using zone: Zone): Texture2D =
+  def depth(target: RenderTexture2D): TextureView =
     target.requireLive()
-    val _ = zone
-    val rawTarget = !target.ptr
-    val texture = stackalloc[Texture2D]()
-    (!texture)._1 = rawTarget._7
-    (!texture)._2 = rawTarget._8
-    (!texture)._3 = rawTarget._9
-    (!texture)._4 = rawTarget._10
-    (!texture)._5 = rawTarget._11
-    !texture
+    new TextureView(target, true)
 
   def id(target: RenderTexture2D): Int =
     target.requireLive()

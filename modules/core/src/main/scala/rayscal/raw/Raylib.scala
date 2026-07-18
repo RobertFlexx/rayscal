@@ -31,6 +31,16 @@ object Raylib:
   def SetWindowSize(width: CInt, height: CInt): Unit = extern
   def SetWindowOpacity(opacity: CFloat): Unit = extern
   def SetWindowFocused(): Unit = extern
+  def GetMonitorCount(): CInt = extern
+  def GetCurrentMonitor(): CInt = extern
+  def GetMonitorPosition(monitor: CInt): Vector2 = extern
+  def GetMonitorWidth(monitor: CInt): CInt = extern
+  def GetMonitorHeight(monitor: CInt): CInt = extern
+  def GetMonitorPhysicalWidth(monitor: CInt): CInt = extern
+  def GetMonitorPhysicalHeight(monitor: CInt): CInt = extern
+  def GetMonitorRefreshRate(monitor: CInt): CInt = extern
+  def GetWindowPosition(): Vector2 = extern
+  def GetWindowScaleDPI(): Vector2 = extern
 
   def BeginDrawing(): Unit = extern
   def EndDrawing(): Unit = extern
@@ -119,9 +129,52 @@ object Raylib:
   def DisableCursor(): Unit = extern
   def IsCursorOnScreen(): CBool = extern
 
+  def IsGamepadAvailable(gamepad: CInt): CBool = extern
+  def GetGamepadName(gamepad: CInt): CString = extern
+  def IsGamepadButtonPressed(gamepad: CInt, button: CInt): CBool = extern
+  def IsGamepadButtonDown(gamepad: CInt, button: CInt): CBool = extern
+  def IsGamepadButtonReleased(gamepad: CInt, button: CInt): CBool = extern
+  def IsGamepadButtonUp(gamepad: CInt, button: CInt): CBool = extern
+  def GetGamepadButtonPressed(): CInt = extern
+  def GetGamepadAxisCount(gamepad: CInt): CInt = extern
+  def GetGamepadAxisMovement(gamepad: CInt, axis: CInt): CFloat = extern
+  def SetGamepadMappings(mappings: CString): CInt = extern
+
+  def GetTouchX(): CInt = extern
+  def GetTouchY(): CInt = extern
+  def GetTouchPosition(index: CInt): Vector2 = extern
+  def GetTouchPointId(index: CInt): CInt = extern
+  def GetTouchPointCount(): CInt = extern
+
+  def SetGesturesEnabled(flags: CUnsignedInt): Unit = extern
+  def IsGestureDetected(gesture: CUnsignedInt): CBool = extern
+  def GetGestureDetected(): CInt = extern
+  def GetGestureHoldDuration(): CFloat = extern
+  def GetGestureDragVector(): Vector2 = extern
+  def GetGestureDragAngle(): CFloat = extern
+  def GetGesturePinchVector(): Vector2 = extern
+  def GetGesturePinchAngle(): CFloat = extern
+
   def LoadImage(fileName: CString): Image = extern
   def GenImageColor(width: CInt, height: CInt, color: Color): Image = extern
   def GenImageChecked(width: CInt, height: CInt, checksX: CInt, checksY: CInt, col1: Color, col2: Color): Image = extern
+  def GenImageGradientLinear(width: CInt, height: CInt, direction: CInt, start: Color, end: Color): Image = extern
+  def GenImageGradientRadial(width: CInt, height: CInt, density: CFloat, inner: Color, outer: Color): Image = extern
+  def GenImagePerlinNoise(width: CInt, height: CInt, offsetX: CInt, offsetY: CInt, scale: CFloat): Image = extern
+  def GenImageCellular(width: CInt, height: CInt, tileSize: CInt): Image = extern
+  def ImageCopy(image: Image): Image = extern
+  def ImageCrop(image: Ptr[Image], crop: Rectangle): Unit = extern
+  def ImageResize(image: Ptr[Image], newWidth: CInt, newHeight: CInt): Unit = extern
+  def ImageResizeNN(image: Ptr[Image], newWidth: CInt, newHeight: CInt): Unit = extern
+  def ImageMipmaps(image: Ptr[Image]): Unit = extern
+  def ImageFlipVertical(image: Ptr[Image]): Unit = extern
+  def ImageFlipHorizontal(image: Ptr[Image]): Unit = extern
+  def ImageRotate(image: Ptr[Image], degrees: CInt): Unit = extern
+  def ImageColorTint(image: Ptr[Image], color: Color): Unit = extern
+  def ImageColorInvert(image: Ptr[Image]): Unit = extern
+  def ImageColorGrayscale(image: Ptr[Image]): Unit = extern
+  def ImageColorContrast(image: Ptr[Image], contrast: CFloat): Unit = extern
+  def ImageColorBrightness(image: Ptr[Image], brightness: CInt): Unit = extern
   def IsImageValid(image: Image): CBool = extern
   def UnloadImage(image: Image): Unit = extern
   def ExportImage(image: Image, fileName: CString): CBool = extern
@@ -133,6 +186,9 @@ object Raylib:
   def UnloadTexture(texture: Texture2D): Unit = extern
   def IsRenderTextureValid(target: RenderTexture2D): CBool = extern
   def UnloadRenderTexture(target: RenderTexture2D): Unit = extern
+  def UpdateTexture(texture: Texture2D, pixels: Ptr[Byte]): Unit = extern
+  def UpdateTextureRec(texture: Texture2D, rec: Rectangle, pixels: Ptr[Byte]): Unit = extern
+  def GenTextureMipmaps(texture: Ptr[Texture2D]): Unit = extern
   def SetTextureFilter(texture: Texture2D, filter: CInt): Unit = extern
   def SetTextureWrap(texture: Texture2D, wrap: CInt): Unit = extern
   def DrawTexture(texture: Texture2D, posX: CInt, posY: CInt, tint: Color): Unit = extern
@@ -160,6 +216,8 @@ object Raylib:
   def GetScreenToWorld2D(position: Vector2, camera: Camera2D): Vector2 = extern
   def GetCameraMatrix(camera: Camera): Matrix = extern
   def GetCameraMatrix2D(camera: Camera2D): Matrix = extern
+  def UpdateCamera(camera: Ptr[Camera3D], mode: CInt): Unit = extern
+  def UpdateCameraPro(camera: Ptr[Camera3D], movement: Vector3, rotation: Vector3, zoom: CFloat): Unit = extern
 
   def ColorIsEqual(col1: Color, col2: Color): CBool = extern
   def Fade(color: Color, alpha: CFloat): Color = extern
@@ -244,3 +302,19 @@ object Raylib:
   def SetMusicPan(music: Music, pan: CFloat): Unit = extern
   def GetMusicTimeLength(music: Music): CFloat = extern
   def GetMusicTimePlayed(music: Music): CFloat = extern
+
+  def FileExists(fileName: CString): CBool = extern
+  def DirectoryExists(dirPath: CString): CBool = extern
+  def IsPathFile(path: CString): CBool = extern
+  def GetFileLength(fileName: CString): CInt = extern
+  def GetFileExtension(fileName: CString): CString = extern
+  def GetFileName(filePath: CString): CString = extern
+  def GetFileNameWithoutExt(filePath: CString): CString = extern
+  def GetDirectoryPath(filePath: CString): CString = extern
+  def GetPrevDirectoryPath(dirPath: CString): CString = extern
+  def GetWorkingDirectory(): CString = extern
+  def GetApplicationDirectory(): CString = extern
+  def ChangeDirectory(dir: CString): CBool = extern
+  def IsFileDropped(): CBool = extern
+  def LoadDroppedFiles(): FilePathList = extern
+  def UnloadDroppedFiles(files: FilePathList): Unit = extern

@@ -106,9 +106,10 @@ object Rlgl:
   def rlFramebufferComplete(id: CUnsignedInt): CBool = extern
   def rlUnloadFramebuffer(id: CUnsignedInt): Unit = extern
 
-  def rlLoadShaderCode(vsCode: CString, fsCode: CString): CUnsignedInt = extern
-  def rlCompileShader(shaderCode: CString, `type`: CInt): CUnsignedInt = extern
-  def rlLoadShaderProgram(vShaderId: CUnsignedInt, fShaderId: CUnsignedInt): CUnsignedInt = extern
+  def rlLoadShader(vsCode: CString, `type`: CInt): CUnsignedInt = extern
+  def rlLoadShaderProgram(vsCode: CString, fsCode: CString): CUnsignedInt = extern
+  def rlLoadShaderProgramEx(vShaderId: CUnsignedInt, fShaderId: CUnsignedInt): CUnsignedInt = extern
+  def rlUnloadShader(id: CUnsignedInt): Unit = extern
   def rlUnloadShaderProgram(id: CUnsignedInt): Unit = extern
   def rlGetLocationUniform(shaderId: CUnsignedInt, uniformName: CString): CInt = extern
   def rlGetLocationAttrib(shaderId: CUnsignedInt, attribName: CString): CInt = extern
@@ -118,7 +119,7 @@ object Rlgl:
   def rlSetUniformSampler(locIndex: CInt, textureId: CUnsignedInt): Unit = extern
   def rlSetShader(id: CUnsignedInt, locs: Ptr[CInt]): Unit = extern
 
-  def rlLoadComputeShaderProgram(shaderId: CUnsignedInt): CUnsignedInt = extern
+  def rlLoadShaderProgramCompute(shaderId: CUnsignedInt): CUnsignedInt = extern
   def rlComputeShaderDispatch(groupX: CUnsignedInt, groupY: CUnsignedInt, groupZ: CUnsignedInt): Unit = extern
 
   def rlLoadShaderBuffer(size: CUnsignedInt, data: Ptr[Byte], usageHint: CInt): CUnsignedInt = extern

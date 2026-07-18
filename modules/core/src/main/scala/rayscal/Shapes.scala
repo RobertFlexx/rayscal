@@ -5,7 +5,8 @@ import scala.scalanative.unsafe.Zone
 
 object Shapes:
   def pixel(x: Int, y: Int, color: Color): Unit =
-    line(x, y, x, y, color)
+    Zone:
+      RayscalNative.DrawPixel(x, y, NativeCopies.color(color))
 
   def line(x1: Int, y1: Int, x2: Int, y2: Int, color: Color): Unit =
     Zone:

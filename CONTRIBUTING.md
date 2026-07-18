@@ -2,7 +2,7 @@
 
 Thanks for helping build rayscal.
 
-rayscal is experimental and intentionally thin. The first goal is a correct,
+rayscal is under active development and intentionally thin. The first goal is a correct,
 predictable Scala Native surface over raylib's C API. Friendlier Scala wrappers
 can grow on top once the raw layer is trustworthy.
 
@@ -14,9 +14,10 @@ can grow on top once the raw layer is trustworthy.
 - Prefer tiny, readable examples over large demos.
 - Keep Linux working first. Add macOS and Windows notes as they are validated.
 - Include comments for native interop details that are easy to misuse.
-- Flatten nested C structs in raw aliases when they are passed by value.
-- Use a tiny C shim for large by-value struct returns that prove unstable at
-  runtime. Keep shims in `modules/core/src/main/resources/scala-native`.
+- Do not pass resource-bearing or nested structs by value across the friendly
+  API boundary. Use pointer-based C shims.
+- Keep shims in `modules/core/src/main/resources/scala-native` small and
+  mechanical.
 
 ## Adding bindings
 
@@ -38,17 +39,11 @@ can grow on top once the raw layer is trustworthy.
 ## Local checks
 
 ```bash
-sbt core/compile
-sbt helloWindow/nativeLink
-sbt bouncingBall/nativeLink
-sbt keyboardInput/nativeLink
-sbt rlglTriangle/nativeLink
-sbt shapesGallery/nativeLink
-sbt textureChecker/nativeLink
-sbt basic3d/nativeLink
-sbt camera2d/nativeLink
-sbt renderTexture/nativeLink
+sbt check
 ```
+
+This compiles the core, runs the ABI size/field-layout check, and links every
+example.
 
 Run examples manually because they open native windows:
 

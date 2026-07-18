@@ -1,569 +1,225 @@
 # rayscal
 
-> A tiny rascal of a Scala Native binding for raylib.
+<p align="center">
+  <img src="assets/rayscal.png" alt="rayscal logo" width="400" />
+</p>
 
->***Very Experimental, expect bugs. But it will get better im trying my best.***
+Scala Native bindings for [raylib](https://www.raylib.com/) 6.0.
 
-[![Status](https://img.shields.io/badge/status-experimental%20pre--alpha-orange.svg)](#project-status)
-[![Scala](https://img.shields.io/badge/Scala-3-red.svg)](https://www.scala-lang.org/)
-[![Scala Native](https://img.shields.io/badge/Scala%20Native-0.5.x-blue.svg)](https://scala-native.org/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/rayscal/rayscal/actions/workflows/ci.yml/badge.svg)](https://github.com/rayscal/rayscal/actions)
+[![Scala 3](https://img.shields.io/badge/Scala-3.7-DC322F.svg)](https://scala-lang.org)
+[![Scala Native](https://img.shields.io/badge/Scala%20Native-0.5-blueviolet.svg)](https://scala-native.org)
+[![raylib](https://img.shields.io/badge/raylib-6.0-ff6347.svg)](https://www.raylib.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-`rayscal` is a small, direct Scala Native binding for
-[raylib](https://www.raylib.com/). It starts close to raylib's C API so the
-behavior stays predictable, while leaving room for a friendlier Scala layer as
-the binding matures.
+rayscal wraps raylib's C API in idiomatic Scala, producing a single native binary
+via Scala Native. No JVM at runtime, no GC pauses, no FFI overhead beyond the
+C interop layer. Write game loops and graphics code in Scala, compile to a
+standalone ELF binary, ship it.
 
-The project is Linux-first for now and assumes raylib is installed on the host
-system.
+## What's in the box
 
-## Quick Start
+- Window management, timing, FPS
+- 2D drawing: shapes, text, textures, render targets
+- 3D drawing: basic primitives, models, cameras
+- Input: keyboard, mouse, gamepad, touch, gestures
+- Audio: sound effects, music streams
+- Shaders: typed uniform setters (float, vec2/3/4, int, matrix, texture)
+- Image loading, generation, and manipulation
+- Collision detection (2D and 3D raycasts)
+- rlgl access for low-level OpenGL-style drawing
+- raymath extern declarations (ready for a friendly wrapper layer)
 
-If you installed Scala, sbt, and raylib with Linuxbrew/Homebrew, this is the
-exact command used to validate this repository:
+Resource-owning types (`Texture2D`, `Shader`, `Sound`, `Music`, `Model`, `Font`,
+`RenderTexture2D`) are managed handles with `with...` helpers for scoped
+lifetimes. No dangling pointers, no double-frees.
 
-```bash
-PATH=/home/linuxbrew/.linuxbrew/bin:$PATH sbt "all core/compile helloWindow/nativeLink bouncingBall/nativeLink keyboardInput/nativeLink rlglTriangle/nativeLink shapesGallery/nativeLink textureChecker/nativeLink basic3d/nativeLink camera2d/nativeLink renderTexture/nativeLink"
+## Quick example
+
+```scala
+import rayscal.*
+
+@main def run(): Unit =
+  Window.withWindow(800, 450, "hello rayscal"):
+    Window.setTargetFps(60)
+
+    while !Window.shouldClose do
+      Drawing.frame:
+        Drawing.clear(Colors.RAYWHITE)
+        Drawing.text("Hello from rayscal!", 220, 200, 28, Colors.DARKGRAY)
+
+        if Keyboard.isDown(Keys.Space) then
+          Shapes.circle(400, 280, 48, Colors.SKYBLUE)
+        else
+          Shapes.circleLines(400, 280, 48, Colors.BLUE)
 ```
 
-Run the smallest example:
+Build and run:
 
 ```bash
-PATH=/home/linuxbrew/.linuxbrew/bin:$PATH sbt helloWindow/run
+sbt run
 ```
-
-If `sbt` is already on your `PATH`, the shorter commands work:
-
-```bash
-sbt "all core/compile helloWindow/nativeLink bouncingBall/nativeLink keyboardInput/nativeLink rlglTriangle/nativeLink shapesGallery/nativeLink textureChecker/nativeLink basic3d/nativeLink camera2d/nativeLink renderTexture/nativeLink"
-sbt helloWindow/run
-```
-
-## Project Status
-
-Experimental pre-alpha.
-
-The current binding is intentionally small. It supports enough of raylib core to
-open a window, draw text, clear the background, draw circles, read keyboard
-and mouse input, draw common 2D shapes, generate/load/draw textures, call an
-initial subset of `rlgl`, draw basic 3D shapes with cameras, bind the audio
-device/sound/music lifecycle, support render textures and shader lifecycle
-helpers, and run the starter examples. It does not claim complete raylib support
-yet.
 
 ## Requirements
 
-- JDK 17 or newer
+- JDK 17+
 - sbt 1.x
-- Scala Native toolchain dependencies
-- raylib installed as a system library
-- Linux with a working graphics stack
+- Scala Native toolchain (Clang, LLVM, lld)
+- raylib 6.0 installed as a shared library
+- Linux (X11 or Wayland)
 
-Scala Native also needs native build tools such as Clang/LLVM and a linker.
+See [BUILDING.md](BUILDING.md) for detailed setup instructions, troubleshooting,
+and how to use rayscal from your own sbt project.
 
-## Installing raylib on Linux
+## Examples
 
-### Ubuntu or Debian
+| Example | What it shows |
+|---|---|
+| `helloWindow` | Minimal window with centered text |
+| `bouncingBall` | Frame-rate-independent movement |
+| `keyboardInput` | Key state queries |
+| `rlglTriangle` | Low-level rlgl immediate mode |
+| `shapesGallery` | 2D shapes and mouse picking |
+| `textureChecker` | Generated textures |
+| `basic3d` | 3D primitives with a camera |
+| `camera2d` | 2D camera with zoom/pan |
+| `renderTexture` | Draw-to-texture (offscreen rendering) |
+| `starRescue` | Complete arcade game with fixed timestep |
 
-Some distributions package raylib:
-
-```bash
-sudo apt update
-sudo apt install libraylib-dev
-```
-
-If your distribution does not provide `libraylib-dev`, build raylib from source:
-
-```bash
-sudo apt update
-sudo apt install build-essential git cmake libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev
-git clone https://github.com/raysan5/raylib.git
-cd raylib
-cmake -B build -S . -DBUILD_SHARED_LIBS=ON
-cmake --build build
-sudo cmake --install build
-sudo ldconfig
-```
-
-### Fedora
+Run any example with `sbt <name>/run`, for example:
 
 ```bash
-sudo dnf install raylib-devel
+sbt starRescue/run
 ```
 
-Package names vary by distro and release. If a package is unavailable, use the
-source build above.
+## Project structure
 
-## Repository Layout
-
-```text
+```
 rayscal/
-  README.md
-  CONTRIBUTING.md
-  LICENSE
-  .gitignore
-  build.sbt
-  project/
-    build.properties
-    plugins.sbt
-  modules/
-    core/
-      src/main/scala/rayscal/
-        Colors.scala
-        Audio.scala
-        Camera.scala
-        Collisions.scala
-        Vector.scala
-        Window.scala
-        Drawing.scala
-        Input.scala
-        Rlgl.scala
-        Rect.scala
-        Shapes.scala
-        RenderTargets.scala
-        ScreenSpace.scala
-        Shaders.scala
-        Textures.scala
-        Time.scala
-        Utils.scala
-        raw/
-          package.scala
-          Raylib.scala
-          Rlgl.scala
-          RayscalNative.scala
-      src/main/resources/
-        scala-native/
-          rayscal.c
-  examples/
-    hello-window/
-      src/main/scala/
-        Main.scala
-    bouncing-ball/
-      src/main/scala/
-        Main.scala
-    keyboard-input/
-      src/main/scala/
-        Main.scala
-    rlgl-triangle/
-      src/main/scala/
-        Main.scala
-    shapes-gallery/
-      src/main/scala/
-        Main.scala
-    texture-checker/
-      src/main/scala/
-        Main.scala
-    basic-3d/
-      src/main/scala/
-        Main.scala
-    camera-2d/
-      src/main/scala/
-        Main.scala
-    render-texture/
-      src/main/scala/
-        Main.scala
+  modules/core/
+    src/main/scala/rayscal/
+      # Friendly wrappers
+      Window.scala          # window lifecycle, DPI, fullscreen
+      Drawing.scala         # frame(), text, clear, mode2D/3D, shader/blend/scissor
+      Colors.scala          # named colors, rgba(), color utilities
+      Shapes.scala          # 2D primitives (circles, rectangles, triangles, etc.)
+      Shapes3D.scala        # 3D primitives (cubes, spheres, cylinders, etc.)
+      Input.scala           # Keyboard, Mouse, Gamepads, Touch, Gestures
+      Textures.scala        # load, draw, filter, wrap, cubemaps
+      Images.scala          # load, generate, crop, resize, color ops
+      Fonts.scala           # custom font loading and rendering
+      Audio.scala           # Waves, Sounds, MusicStreams with scoped lifetimes
+      Models.scala          # load/generate 3D models, material overrides
+      Shaders.scala         # load, typed uniforms (float, vec2/3/4, int, matrix, texture)
+      RenderTargets.scala   # offscreen rendering to texture
+      Collisions.scala      # 2D and 3D collision/raycast queries
+      Camera.scala          # Camera2D/Camera3D construction, update modes
+      ScreenSpace.scala     # world-to-screen / screen-to-world conversion
+      Rlgl.scala            # rlgl matrix stack, immediate mode, render state
+      Vector.scala          # factory methods + extensions on Vector2/3/4
+      Rect.scala            # rectangle utilities
+      Time.scala            # frame time, elapsed time
+      Utils.scala           # dropped files, paths
+      ManagedResources.scala # managed handle base classes
+      NativeCopies.scala    # safe pointer-based struct passing
+      RaylibAbi.scala       # compile-time struct layout validation
+    src/main/scala/rayscal/raw/
+      Raylib.scala          # @extern declarations matching raylib C API
+      Rlgl.scala            # @extern declarations for rlgl
+      RayscalNative.scala   # @extern declarations for C shim layer
+      RaymathNative.scala   # @extern declarations for raymath
+      package.scala         # C struct type aliases (Color, Vector2, etc.)
+    src/main/resources/scala-native/
+      rayscal.c             # C shims for ABI-sensitive struct-by-value calls
+  examples/                 # 11 example programs
 ```
 
 ## Architecture
 
-`rayscal` has two layers today:
+rayscal has three layers:
 
-- `rayscal.raw.Raylib`: raw Scala Native `@extern` bindings. Names intentionally
-  match raylib's C functions, such as `InitWindow`, `BeginDrawing`, and
-  `DrawText`.
-- `rayscal.raw.Rlgl`: raw Scala Native `@extern` bindings for raylib's `rlgl`
-  module. Names intentionally match C functions, such as `rlBegin`,
-  `rlVertex3f`, and `rlSetBlendMode`.
-- `rayscal.raw.RayscalNative`: tiny project-owned native shims for C ABI edges
-  where a direct extern would be less reliable. Keep this file small and
-  boring.
-- `rayscal.raw.Color` and `rayscal.raw.Vector2`: C-shaped type aliases used by
-  the extern layer.
-- Friendly helpers in `rayscal`: `Window`, `Drawing`, `Colors`, `Vector`,
-  `Rect`, `Shapes`, `Keyboard`, `Mouse`, `Keys`, `Time`, `Images`, `Textures`,
-  `Cameras`, `Shapes3D`, `Collisions`, `Audio`, `Sounds`, `MusicStreams`, and
-  `RenderTargets`, `Shaders`, `ScreenSpace`, and `Rlgl` reduce repetitive
-  `Zone`, `CString`, C struct, resource lifecycle, and integer enum setup while
-  staying thin.
+**1. `rayscal.raw` -- FFI declarations**
 
-The raw layer should remain boring and close to C. The friendly layer should
-make Scala examples pleasant without blocking direct access to raylib as more of
-the API is bound.
+Direct Scala Native `@extern` bindings that map 1:1 to raylib's C functions.
+Names match raylib exactly: `InitWindow`, `BeginDrawing`, `DrawText`, etc.
+Use these when you need something the friendly layer doesn't cover yet.
 
-Some raylib structs contain nested structs and are passed or returned by value.
-Those aliases are flattened in `rayscal.raw.package` to match the C memory
-layout directly. For larger returned structs, such as `RenderTexture2D`,
-`rayscal` uses a tiny C shim that writes into caller-owned memory. This keeps
-the public Scala API simple while avoiding fragile native ABI lowering.
+**2. `rayscal.raw.RayscalNative` -- C shim layer**
 
-The intended long-term shape is:
+A small C file (`rayscal.c`) plus matching `@extern` declarations. These handle
+raylib functions that return structs by value or take large structs as parameters.
+Scala Native's `@extern` ABI lowering can be unreliable for these calls across
+different toolchains. The shims receive pointers instead, making the interop
+predictable.
 
-- `rayscal.raw`: broad, low-level C interop for raylib, raymath, rlgl, and
-  related structs/enums.
-- `rayscal`: small Scala wrappers that make common use pleasant while keeping
-  performance and behavior predictable.
-- `examples`: focused programs that prove each newly bound area works in a real
-  native binary.
+**3. `rayscal.*` -- friendly wrappers**
 
-## Bound API Surface
+Thin Scala objects that handle `Zone` allocation, `CString` conversion, and
+resource lifecycle so you don't have to. They call through to `RayscalNative`
+shims (for struct-heavy calls) or directly to `Raylib` (for scalar returns like
+`GetScreenWidth` or `IsKeyDown`).
 
-Current core functions:
+The rule of thumb: use the friendly layer. Fall back to `rayscal.raw` when you
+need a function that hasn't been wrapped yet.
 
-- `InitWindow`
-- `CloseWindow`
-- `WindowShouldClose`
-- window state and sizing helpers such as `IsWindowReady`, `IsWindowFocused`,
-  `SetWindowTitle`, `SetWindowSize`, `ToggleFullscreen`, and related functions
-- `BeginDrawing`
-- `EndDrawing`
-- `ClearBackground`
-- `BeginMode2D`, `EndMode2D`, `BeginMode3D`, `EndMode3D`
-- blend/scissor helpers: `BeginBlendMode`, `EndBlendMode`, `BeginScissorMode`,
-  `EndScissorMode`
-- `DrawText`
-- `DrawFPS`, `MeasureText`, `SetTextLineSpacing`
-- `DrawCircle`
-- `DrawCircleV`
-- common 2D shapes: pixels, lines, circles, ellipses, rings, rectangles,
-  triangles, and polygons
-- `SetTargetFPS`
-- `GetFrameTime`
-- `GetTime`
-- `GetFPS`
-- `GetScreenWidth`
-- `GetScreenHeight`
-- `GetRenderWidth`
-- `GetRenderHeight`
-- random/screenshot/config/log helpers
-- `IsKeyDown`
-- `IsKeyPressed`
-- `IsKeyPressedRepeat`
-- `IsKeyReleased`
-- `IsKeyUp`
-- queued key/char input
-- mouse buttons, position, delta, wheel, cursor visibility/locking
-- images and textures: `LoadImage`, `GenImageColor`, `GenImageChecked`,
-  `UnloadImage`, `LoadTexture`, `LoadTextureFromImage`, `UnloadTexture`,
-  `DrawTexture*`, texture filter/wrap
-- render texture lifecycle and draw-to-texture mode
-- shader lifecycle, shader mode, shader locations, texture uniforms
-- screen/world coordinate conversion helpers for 2D and 3D cameras
-- color utility functions: fade, tint, brightness, HSV conversion
-- basic 2D collision helpers
-- basic 3D drawing: lines, points, circles, triangles, cubes, spheres,
-  cylinders, capsules, planes, rays, grids
-- basic 3D collision helpers for spheres, boxes, and rays
-- audio device, wave, sound, and music stream lifecycle/playback helpers
+## Using assets
 
-Current `rlgl` functions:
-
-- matrix stack and transforms: `rlMatrixMode`, `rlPushMatrix`, `rlPopMatrix`,
-  `rlLoadIdentity`, `rlTranslatef`, `rlRotatef`, `rlScalef`, `rlSetClipPlanes`
-- immediate drawing: `rlBegin`, `rlEnd`, `rlVertex2i`, `rlVertex2f`,
-  `rlVertex3f`, `rlTexCoord2f`, `rlNormal3f`, `rlColor4ub`, `rlColor3f`,
-  `rlColor4f`
-- render state: texture, cubemap, shader, framebuffer, blend, depth, culling,
-  scissor, wire/point mode, line width, smooth lines, stereo render
-- simple helpers: `rlSetTexture`, `rlLoadDrawCube`, `rlLoadDrawQuad`
-- GPU resource foundations: vertex arrays/buffers, framebuffer load/attach,
-  shader program compile/load/unload, compute dispatch, SSBO bind/unload
-
-Current basic types:
-
-- `Color`
-- `Vector2`
-- `Vector3`
-- `Vector4`
-- `Quaternion`
-- `Matrix`
-- `Rectangle`
-- `Image`
-- `Texture2D`
-- `RenderTexture2D`
-- `Shader`
-- `Camera2D`
-- `Camera3D`
-- `Ray`
-- `BoundingBox`
-- `RayCollision`
-- `Wave`
-- `Sound`
-- `Music`
-
-Current color helpers:
-
-- `RAYWHITE`
-- `BLACK`
-- `WHITE`
-- `RED`
-- `GREEN`
-- `BLUE`
-- additional raylib palette colors including `SKYBLUE`, `DARKGRAY`, `YELLOW`,
-  `ORANGE`, `PURPLE`, `BROWN`, `BLANK`, and more
-
-## Build
-
-Compile the core module:
-
-```bash
-sbt core/compile
-```
-
-Compile all native binaries:
-
-```bash
-sbt "all core/compile helloWindow/nativeLink bouncingBall/nativeLink keyboardInput/nativeLink rlglTriangle/nativeLink shapesGallery/nativeLink textureChecker/nativeLink basic3d/nativeLink camera2d/nativeLink renderTexture/nativeLink"
-```
-
-## Run Examples
-
-Hello window:
-
-```bash
-sbt helloWindow/run
-```
-
-Bouncing ball:
-
-```bash
-sbt bouncingBall/run
-```
-
-Keyboard input:
-
-```bash
-sbt keyboardInput/run
-```
-
-rlgl triangle:
-
-```bash
-sbt rlglTriangle/run
-```
-
-Shapes and mouse input:
-
-```bash
-sbt shapesGallery/run
-```
-
-Generated texture:
-
-```bash
-sbt textureChecker/run
-```
-
-Basic 3D:
-
-```bash
-sbt basic3d/run
-```
-
-2D camera:
-
-```bash
-sbt camera2d/run
-```
-
-Render texture:
-
-```bash
-sbt renderTexture/run
-```
-
-The hello-window example opens an 800x450 window and draws:
-
-```text
-Hello from rayscal!
-```
-
-## Linker and Library Path Troubleshooting
-
-### Homebrew/Linuxbrew `sbt`, `java`, or `brew` is not found
-
-If you installed Scala and sbt through Homebrew on Linux, non-interactive shells
-may not include Homebrew's bin directory.
-
-Check:
-
-```bash
-command -v brew
-command -v java
-command -v sbt
-```
-
-For Linuxbrew, load Homebrew's shell environment:
-
-```bash
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-```
-
-Or prefix a command directly:
-
-```bash
-PATH=/home/linuxbrew/.linuxbrew/bin:$PATH sbt helloWindow/run
-```
-
-For Apple Silicon macOS, the Homebrew prefix is usually `/opt/homebrew`:
-
-```bash
-eval "$(/opt/homebrew/bin/brew shellenv)"
-```
-
-This project is still Linux-first, but the same PATH issue can appear on macOS
-when tools were installed with Homebrew.
-
-### `ld: cannot find -lraylib`
-
-The linker cannot find `libraylib.so` or `libraylib.a`.
-
-Check whether raylib is installed:
-
-```bash
-pkg-config --libs raylib
-ldconfig -p | grep raylib
-```
-
-`build.sbt` uses `pkg-config --libs raylib` when available. If `pkg-config`
-prints the correct `-L... -lraylib` flags, sbt should pick them up.
-
-If raylib is installed in a custom prefix and `pkg-config` is unavailable, add a
-linker path in `build.sbt`:
+Put assets next to your project and load them by path:
 
 ```scala
-nativeConfig ~= { config =>
-  config.withLinkingOptions(config.linkingOptions ++ Seq("-L/opt/raylib/lib", "-lraylib"))
-}
+import rayscal.*
+
+@main def run(): Unit =
+  Window.withWindow(800, 450, "Textures"):
+    Textures.withTexture("assets/player.png"): player =>
+      Window.setTargetFps(60)
+
+      while !Window.shouldClose do
+        Drawing.frame:
+          Drawing.clear(Colors.RAYWHITE)
+          Textures.draw(player, 100, 100, Colors.WHITE)
 ```
 
-You may also need:
+`with...` helpers guarantee cleanup. The texture is unloaded when the block
+exits, even if an exception is thrown.
 
-```bash
-export LD_LIBRARY_PATH=/opt/raylib/lib:$LD_LIBRARY_PATH
+## Shader uniforms
+
+```scala
+Shaders.withShaderFromMemory(vertexCode, fragmentCode): shader =>
+  val timeLoc = Shaders.location(shader, "time")
+  val tintLoc = Shaders.location(shader, "tint")
+
+  while !Window.shouldClose do
+    Drawing.frame:
+      Shaders.setFloat(shader, timeLoc, Time.elapsed.toFloat)
+      Shaders.setVector3(shader, tintLoc, Vector.vector3(1.0f, 0.7f, 0.4f))
 ```
 
-### `raylib.h` is not found while compiling native code
+Available setters: `setFloat`, `setVector2`, `setVector3`, `setVector4`,
+`setInt`, `setInts`, `setMatrix`, `setTexture`.
 
-`rayscal` includes a tiny C shim for a small number of ABI-sensitive raylib
-calls. That shim needs raylib's C include path.
+## Raw access
 
-Check:
+For functions without a friendly wrapper:
 
-```bash
-pkg-config --cflags raylib
+```scala
+import rayscal.raw.Raylib
+import scala.scalanative.unsafe.*
+
+Zone:
+  Raylib.SetWindowTitle(toCString("New title"))
 ```
 
-`build.sbt` uses `pkg-config --cflags raylib` automatically. If raylib is
-installed in a custom prefix, make sure its `.pc` file is visible:
+The raw layer is a direct map of the C API. You'll need to handle `Zone`,
+`CString`, and struct pointers yourself.
 
-```bash
-export PKG_CONFIG_PATH=/opt/raylib/lib/pkgconfig:$PKG_CONFIG_PATH
-```
+## Links
 
-### Runtime error: `libraylib.so: cannot open shared object file`
-
-The binary linked successfully, but the dynamic loader cannot find raylib at
-runtime.
-
-`build.sbt` embeds an rpath for any `-L...` path reported by
-`pkg-config --libs raylib`. If you installed raylib after linking, or changed
-where raylib is installed, relink the example:
-
-```bash
-sbt camera2d/nativeLink
-sbt camera2d/run
-```
-
-Run:
-
-```bash
-sudo ldconfig
-```
-
-Or set:
-
-```bash
-export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-```
-
-### `Exec failed, error: 2 (No such file or directory)` after native linking
-
-If the executable exists but `sbt .../run` reports it cannot be found, the ELF
-interpreter baked into the binary may not exist on your distribution. This can
-happen on Exherbo when a Homebrew/LLVM toolchain chooses
-`/usr/x86_64-unknown-linux-gnu/...`, while the host uses
-`/usr/x86_64-pc-linux-gnu/...`.
-
-Check:
-
-```bash
-readelf -l examples/camera-2d/target/scala-3.7.3/rayscal-camera-2d | grep interpreter
-readelf -l /bin/sh | grep interpreter
-```
-
-`build.sbt` detects the interpreter from `/bin/sh` and passes it to the linker
-with `-Wl,--dynamic-linker=...`. If you changed toolchains, relink:
-
-```bash
-sbt camera2d/nativeLink camera2d/run
-```
-
-### Missing X11, OpenGL, or audio symbols
-
-Install raylib's native dependencies for your distribution. On Ubuntu/Debian:
-
-```bash
-sudo apt install libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev
-```
-
-If you built raylib statically, you may need to add extra libraries to
-`linkingOptions`. Dynamic linking is simpler for this starter project.
-
-### Render textures crash immediately
-
-Render textures use a C shim instead of a direct by-value `LoadRenderTexture`
-extern. If you see a crash around framebuffer creation, clean and relink so the
-shim and native compile options are refreshed:
-
-```bash
-sbt clean
-sbt renderTexture/run
-```
-
-## Roadmap
-
-Short-term:
-
-- Expand raylib core coverage carefully
-- Add small examples for each newly supported area
-- Validate Linux install instructions across common distributions
-- Keep Ubuntu CI green for core compilation and native example linking
-- Keep resource-owning APIs paired with `with...` helpers where practical
-
-Planned binding areas:
-
-- raylib core: windows, drawing lifecycle, timing, files, logging
-- rlgl: immediate-mode drawing, render state, buffers, textures, shaders,
-  framebuffers, compute helpers
-- raymath: vectors, matrices, quaternions, transforms
-- textures: image loading, texture upload, drawing textures, render textures,
-  image manipulation
-- audio: device lifecycle, sounds, music streams
-- 3D camera: camera types, perspective setup, 3D drawing lifecycle
-- input: keyboard, mouse, gamepad
-- shapes: rectangles, lines, circles, polygons, collision helpers
-
-Later when i feeel like doing it (which i will):
-
-- macOS support notes
-- Windows support notes
-- More complete type coverage
-- Optional generated raw bindings after the hand-written API settles
-- A friendlier Scala wrapper layer over the raw externs
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+- [BUILDING.md](BUILDING.md) -- build instructions, project setup, troubleshooting
+- [raylib documentation](https://www.raylib.com/)
+- [Scala Native](https://scala-native.org)
+- [raylib GitHub](https://github.com/raysan5/raylib)
 
 ## License
 

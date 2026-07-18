@@ -33,9 +33,12 @@ object Rlgl:
     RawRlgl.rlMatrixMode(mode.value)
 
   def pushMatrix(body: => Unit): Unit =
+    RawRlgl.rlMatrixMode(MatrixMode.ModelView.value)
     RawRlgl.rlPushMatrix()
     try body
-    finally RawRlgl.rlPopMatrix()
+    finally
+      RawRlgl.rlMatrixMode(MatrixMode.ModelView.value)
+      RawRlgl.rlPopMatrix()
 
   def loadIdentity(): Unit =
     RawRlgl.rlLoadIdentity()
@@ -234,14 +237,17 @@ object Rlgl:
 
   def loadShaderCode(vertexShaderCode: String, fragmentShaderCode: String): Int =
     Zone:
-      RawRlgl.rlLoadShaderCode(toCString(vertexShaderCode), toCString(fragmentShaderCode)).toInt
+      RawRlgl.rlLoadShaderProgram(toCString(vertexShaderCode), toCString(fragmentShaderCode)).toInt
 
   def compileShader(shaderCode: String, shaderType: Int): Int =
     Zone:
-      RawRlgl.rlCompileShader(toCString(shaderCode), shaderType).toInt
+      RawRlgl.rlLoadShader(toCString(shaderCode), shaderType).toInt
 
   def loadShaderProgram(vertexShaderId: Int, fragmentShaderId: Int): Int =
-    RawRlgl.rlLoadShaderProgram(vertexShaderId.toUInt, fragmentShaderId.toUInt).toInt
+    RawRlgl.rlLoadShaderProgramEx(vertexShaderId.toUInt, fragmentShaderId.toUInt).toInt
+
+  def unloadShader(id: Int): Unit =
+    RawRlgl.rlUnloadShader(id.toUInt)
 
   def unloadShaderProgram(id: Int): Unit =
     RawRlgl.rlUnloadShaderProgram(id.toUInt)
@@ -258,7 +264,7 @@ object Rlgl:
     RawRlgl.rlSetUniformSampler(location, textureId.toUInt)
 
   def loadComputeShaderProgram(shaderId: Int): Int =
-    RawRlgl.rlLoadComputeShaderProgram(shaderId.toUInt).toInt
+    RawRlgl.rlLoadShaderProgramCompute(shaderId.toUInt).toInt
 
   def computeShaderDispatch(groupX: Int, groupY: Int, groupZ: Int): Unit =
     RawRlgl.rlComputeShaderDispatch(groupX.toUInt, groupY.toUInt, groupZ.toUInt)

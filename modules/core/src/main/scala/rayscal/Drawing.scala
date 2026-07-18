@@ -31,7 +31,8 @@ object Drawing:
 
   def shaderMode(shader: Shader)(body: Zone ?=> Unit): Unit =
     Zone:
-      Raylib.BeginShaderMode(shader)
+      shader.requireLive()
+      RayscalNative.BeginShaderMode(shader.ptr)
       try body
       finally Raylib.EndShaderMode()
 
@@ -53,6 +54,9 @@ object Drawing:
 
   def text(value: String, x: Int, y: Int, size: Int, color: Color)(using Zone): Unit =
     RayscalNative.DrawText(toCString(value), x, y, size, NativeCopies.color(color))
+
+  def text(font: Font, value: String, position: Vector2, size: Float, spacing: Float, color: Color)(using Zone): Unit =
+    Fonts.draw(font, value, position, size, spacing, color)
 
   def fps(x: Int, y: Int): Unit =
     Raylib.DrawFPS(x, y)

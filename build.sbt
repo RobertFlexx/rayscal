@@ -2,7 +2,22 @@ import scala.scalanative.build._
 import scala.sys.process._
 import scala.util.Try
 
+def requireSupportedRaylib(): Unit = {
+  val version = Try("pkg-config --modversion raylib".!!.trim).getOrElse {
+    sys.error("raylib 6.0.x was not found. Install raylib and ensure pkg-config can locate raylib.pc")
+  }
+  val supported = version.split("\\.").take(2).toList match {
+    case major :: minor :: Nil => Try(major.toInt -> minor.toInt).toOption.exists {
+      case (major, minor) => major == 6 && minor == 0
+    }
+    case _ => false
+  }
+  if (!supported)
+    sys.error(s"Unsupported raylib version $version; rayscal 0.1 targets raylib 6.0.x")
+}
+
 def raylibLinkingOptions: Seq[String] = {
+  requireSupportedRaylib()
   val pkgConfigOptions = Try("pkg-config --libs raylib".!!.trim)
     .toOption
     .filter(_.nonEmpty)
@@ -17,12 +32,14 @@ def raylibLinkingOptions: Seq[String] = {
   pkgConfigOptions ++ rpaths
 }
 
-def raylibCompileOptions: Seq[String] =
+def raylibCompileOptions: Seq[String] = {
+  requireSupportedRaylib()
   Try("pkg-config --cflags raylib".!!.trim)
     .toOption
     .filter(_.nonEmpty)
     .map(_.split("\\s+").toSeq)
     .getOrElse(Seq.empty)
+}
 
 def hostDynamicLinkerOptions: Seq[String] = {
   val interpreterPattern = ".*Requesting program interpreter: ([^\\]]+)\\].*".r
@@ -43,6 +60,13 @@ ThisBuild / organization := "io.github.rayscal"
 ThisBuild / scalaVersion := "3.7.3"
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
+ThisBuild / description := "Scala Native bindings for raylib"
+ThisBuild / versionScheme := Some("early-semver")
+
+addCommandAlias(
+  "check",
+  ";core/compile;abiCheck/run;abiCheck/nativeLink;helloWindow/nativeLink;bouncingBall/nativeLink;keyboardInput/nativeLink;rlglTriangle/nativeLink;shapesGallery/nativeLink;textureChecker/nativeLink;basic3d/nativeLink;camera2d/nativeLink;renderTexture/nativeLink;starRescue/nativeLink"
+)
 
 lazy val commonSettings = Seq(
   scalacOptions ++= Seq(
@@ -60,7 +84,7 @@ lazy val commonSettings = Seq(
 
 lazy val root = project
   .in(file("."))
-  .aggregate(core, helloWindow, bouncingBall, keyboardInput, rlglTriangle, shapesGallery, textureChecker, basic3d, camera2d, renderTexture)
+  .aggregate(core, abiCheck, helloWindow, bouncingBall, keyboardInput, rlglTriangle, shapesGallery, textureChecker, basic3d, camera2d, renderTexture, starRescue)
   .settings(
     name := "rayscal-root",
     publish / skip := true
@@ -81,6 +105,16 @@ lazy val helloWindow = project
   .settings(commonSettings)
   .settings(
     name := "rayscal-hello-window",
+    publish / skip := true
+  )
+
+lazy val abiCheck = project
+  .in(file("examples/abi-check"))
+  .enablePlugins(ScalaNativePlugin)
+  .dependsOn(core)
+  .settings(commonSettings)
+  .settings(
+    name := "rayscal-abi-check",
     publish / skip := true
   )
 
@@ -161,5 +195,15 @@ lazy val renderTexture = project
   .settings(commonSettings)
   .settings(
     name := "rayscal-render-texture",
+    publish / skip := true
+  )
+
+lazy val starRescue = project
+  .in(file("examples/star-rescue"))
+  .enablePlugins(ScalaNativePlugin)
+  .dependsOn(core)
+  .settings(commonSettings)
+  .settings(
+    name := "rayscal-star-rescue",
     publish / skip := true
   )

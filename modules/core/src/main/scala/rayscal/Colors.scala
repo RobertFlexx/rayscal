@@ -1,6 +1,6 @@
 package rayscal
 
-import rayscal.raw.Color
+import rayscal.raw.{Color, RayscalNative}
 import scala.scalanative.unsafe.*
 import scala.scalanative.unsigned.*
 
@@ -11,11 +11,14 @@ object Colors:
     // across the native boundary.
     val _ = zone
     val color = stackalloc[Color]()
-    (!color)._1 = r.toUByte
-    (!color)._2 = g.toUByte
-    (!color)._3 = b.toUByte
-    (!color)._4 = a.toUByte
+    (!color)._1 = clampByte(r).toUByte
+    (!color)._2 = clampByte(g).toUByte
+    (!color)._3 = clampByte(b).toUByte
+    (!color)._4 = clampByte(a).toUByte
     !color
+
+  private def clampByte(value: Int): Int =
+    math.max(0, math.min(255, value))
 
   def RAYWHITE(using Zone): Color = rgba(245, 245, 245, 255)
   def LIGHTGRAY(using Zone): Color = rgba(200, 200, 200, 255)
@@ -42,22 +45,34 @@ object Colors:
   def MAGENTA(using Zone): Color = rgba(255, 0, 255, 255)
 
   def fade(color: Color, alpha: Float)(using Zone): Color =
-    rgba(color._1.toInt, color._2.toInt, color._3.toInt, math.max(0, math.min(255, (255.0f * alpha).round)))
+    val out = stackalloc[Color]()
+    RayscalNative.Fade(out, NativeCopies.color(color), alpha)
+    !out
 
-  def tint(color: Color, tint: Color): Color =
-    rayscal.raw.Raylib.ColorTint(color, tint)
+  def tint(color: Color, tint: Color)(using Zone): Color =
+    val out = stackalloc[Color]()
+    RayscalNative.ColorTint(out, NativeCopies.color(color), NativeCopies.color(tint))
+    !out
 
-  def brightness(color: Color, factor: Float): Color =
-    rayscal.raw.Raylib.ColorBrightness(color, factor)
+  def brightness(color: Color, factor: Float)(using Zone): Color =
+    val out = stackalloc[Color]()
+    RayscalNative.ColorBrightness(out, NativeCopies.color(color), factor)
+    !out
 
-  def fromHSV(hue: Float, saturation: Float, value: Float): Color =
-    rayscal.raw.Raylib.ColorFromHSV(hue, saturation, value)
+  def fromHSV(hue: Float, saturation: Float, value: Float)(using Zone): Color =
+    val out = stackalloc[Color]()
+    RayscalNative.ColorFromHSV(out, hue, saturation, value)
+    !out
 
-  def toHSV(color: Color): Vector3 =
-    rayscal.raw.Raylib.ColorToHSV(color)
+  def toHSV(color: Color)(using Zone): Vector3 =
+    val out = stackalloc[Vector3]()
+    RayscalNative.ColorToHSV(out, NativeCopies.color(color))
+    !out
 
   def toInt(color: Color): Int =
-    rayscal.raw.Raylib.ColorToInt(color)
+    Zone:
+      RayscalNative.ColorToInt(NativeCopies.color(color))
 
   def isEqual(left: Color, right: Color): Boolean =
-    rayscal.raw.Raylib.ColorIsEqual(left, right)
+    Zone:
+      RayscalNative.ColorIsEqual(NativeCopies.color(left), NativeCopies.color(right))

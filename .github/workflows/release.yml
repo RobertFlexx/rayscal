@@ -1,0 +1,98 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: sbt
+
+      - name: Set up sbt
+        uses: sbt/setup-sbt@v1
+
+      - name: Install native dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            clang \
+            cmake \
+            git \
+            libasound2-dev \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libx11-dev \
+            libxcursor-dev \
+            libxi-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            pkg-config
+
+      - name: Build raylib
+        run: |
+          git clone --depth 1 --branch 6.0 https://github.com/raysan5/raylib.git /tmp/raylib
+          cmake -B /tmp/raylib/build -S /tmp/raylib -DBUILD_SHARED_LIBS=ON -DBUILD_EXAMPLES=OFF
+          cmake --build /tmp/raylib/build --parallel 2
+          sudo cmake --install /tmp/raylib/build
+          sudo ldconfig
+
+      - name: Validate bindings
+        run: sbt check
+
+      - name: Build native binary
+        run: sbt "helloWindow/nativeLink"
+
+      - name: Build all example binaries
+        run: |
+          sbt \
+            "bouncingBall/nativeLink" \
+            "keyboardInput/nativeLink" \
+            "rlglTriangle/nativeLink" \
+            "shapesGallery/nativeLink" \
+            "textureChecker/nativeLink" \
+            "basic3d/nativeLink" \
+            "camera2d/nativeLink" \
+            "renderTexture/nativeLink" \
+            "starRescue/nativeLink"
+
+      - name: Package release archive
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          STAGING_DIR="rayscal-${VERSION}-linux-x86_64"
+          mkdir -p "${STAGING_DIR}/examples"
+          cp examples/hello-window/target/scala-3.7.3/rayscal-hello-window "${STAGING_DIR}/examples/"
+          cp examples/bouncing-ball/target/scala-3.7.3/rayscal-bouncing-ball "${STAGING_DIR}/examples/"
+          cp examples/keyboard-input/target/scala-3.7.3/rayscal-keyboard-input "${STAGING_DIR}/examples/"
+          cp examples/rlgl-triangle/target/scala-3.7.3/rayscal-rlgl-triangle "${STAGING_DIR}/examples/"
+          cp examples/shapes-gallery/target/scala-3.7.3/rayscal-shapes-gallery "${STAGING_DIR}/examples/"
+          cp examples/texture-checker/target/scala-3.7.3/rayscal-texture-checker "${STAGING_DIR}/examples/"
+          cp examples/basic-3d/target/scala-3.7.3/rayscal-basic-3d "${STAGING_DIR}/examples/"
+          cp examples/camera-2d/target/scala-3.7.3/rayscal-camera-2d "${STAGING_DIR}/examples/"
+          cp examples/render-texture/target/scala-3.7.3/rayscal-render-texture "${STAGING_DIR}/examples/"
+          cp examples/star-rescue/target/scala-3.7.3/rayscal-star-rescue "${STAGING_DIR}/examples/"
+          cp README.md BUILDING.md LICENSE "${STAGING_DIR}/"
+          tar czf "${STAGING_DIR}.tar.gz" "${STAGING_DIR}"
+          echo "ARCHIVE=${STAGING_DIR}.tar.gz" >> "$GITHUB_ENV"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: ${{ env.ARCHIVE }}
