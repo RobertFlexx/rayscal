@@ -1,6 +1,7 @@
 <img src="assets/rayscal.png" alt="rayscal" width="160" align="left" />
 
 ### rayscal
+> a tiny **rascal** of a binding for raylib!
 
 Scala Native bindings for [raylib](https://www.raylib.com/) 6.0.
 
