@@ -16,7 +16,7 @@ via Scala Native. No JVM at runtime, no GC pauses, no FFI overhead beyond the
 C interop layer. Write game loops and graphics code in Scala, compile to a
 standalone ELF binary, ship it.
 
-> ***VERY*** early experimental beta! expect things to **break!**
+> ***VERY*** early experimental beta! expect things to **break**, and code to be **unfinished** or **unsafe**. im one guy, and yet to test.
 <br clear="left"/>
 
 ---
