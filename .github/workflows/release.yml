@@ -33,6 +33,7 @@ jobs:
           sudo apt-get install -y \
             build-essential \
             clang \
+            lld \
             cmake \
             git \
             libasound2-dev \
@@ -46,6 +47,12 @@ jobs:
             libxrandr-dev \
             pkg-config \
             xvfb
+          clang --version
+          clang_major="$(clang -dumpversion | cut -d. -f1)"
+          if [ "${clang_major}" -lt 16 ]; then
+            echo "Clang ${clang_major} is below the recommended minimum of 16" >&2
+            exit 1
+          fi
 
       - name: Build raylib
         run: |
@@ -80,16 +87,16 @@ jobs:
           VERSION="${GITHUB_REF#refs/tags/}"
           STAGING_DIR="rayscal-${VERSION}-linux-x86_64"
           mkdir -p "${STAGING_DIR}/examples"
-          cp examples/hello-window/target/scala-3.7.3/rayscal-hello-window "${STAGING_DIR}/examples/"
-          cp examples/bouncing-ball/target/scala-3.7.3/rayscal-bouncing-ball "${STAGING_DIR}/examples/"
-          cp examples/keyboard-input/target/scala-3.7.3/rayscal-keyboard-input "${STAGING_DIR}/examples/"
-          cp examples/rlgl-triangle/target/scala-3.7.3/rayscal-rlgl-triangle "${STAGING_DIR}/examples/"
-          cp examples/shapes-gallery/target/scala-3.7.3/rayscal-shapes-gallery "${STAGING_DIR}/examples/"
-          cp examples/texture-checker/target/scala-3.7.3/rayscal-texture-checker "${STAGING_DIR}/examples/"
-          cp examples/basic-3d/target/scala-3.7.3/rayscal-basic-3d "${STAGING_DIR}/examples/"
-          cp examples/camera-2d/target/scala-3.7.3/rayscal-camera-2d "${STAGING_DIR}/examples/"
-          cp examples/render-texture/target/scala-3.7.3/rayscal-render-texture "${STAGING_DIR}/examples/"
-          cp examples/star-rescue/target/scala-3.7.3/rayscal-star-rescue "${STAGING_DIR}/examples/"
+          cp examples/hello-window/target/scala-3.8.4/rayscal-hello-window "${STAGING_DIR}/examples/"
+          cp examples/bouncing-ball/target/scala-3.8.4/rayscal-bouncing-ball "${STAGING_DIR}/examples/"
+          cp examples/keyboard-input/target/scala-3.8.4/rayscal-keyboard-input "${STAGING_DIR}/examples/"
+          cp examples/rlgl-triangle/target/scala-3.8.4/rayscal-rlgl-triangle "${STAGING_DIR}/examples/"
+          cp examples/shapes-gallery/target/scala-3.8.4/rayscal-shapes-gallery "${STAGING_DIR}/examples/"
+          cp examples/texture-checker/target/scala-3.8.4/rayscal-texture-checker "${STAGING_DIR}/examples/"
+          cp examples/basic-3d/target/scala-3.8.4/rayscal-basic-3d "${STAGING_DIR}/examples/"
+          cp examples/camera-2d/target/scala-3.8.4/rayscal-camera-2d "${STAGING_DIR}/examples/"
+          cp examples/render-texture/target/scala-3.8.4/rayscal-render-texture "${STAGING_DIR}/examples/"
+          cp examples/star-rescue/target/scala-3.8.4/rayscal-star-rescue "${STAGING_DIR}/examples/"
           cp README.md BUILDING.md LICENSE "${STAGING_DIR}/"
           tar czf "${STAGING_DIR}.tar.gz" "${STAGING_DIR}"
           echo "ARCHIVE=${STAGING_DIR}.tar.gz" >> "$GITHUB_ENV"

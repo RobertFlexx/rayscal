@@ -1,13 +1,13 @@
 # Building rayscal
 
-This document covers how to build rayscal from source, run it as an sbt
-dependency, and produce standalone native binaries.
+This document covers how to build rayscal from source, use it as an sbt
+dependency, and produce native binaries.
 
 ## Prerequisites
 
-- JDK 17+
-- sbt 1.x
-- Clang 14+ (Scala Native's LLVM backend)
+- JDK 17+ (Temurin 21 is what CI uses)
+- sbt 1.12.14
+- Clang / LLVM **16+** recommended (Scala Native 0.5.12 deprecates older toolchains)
 - raylib 6.0 installed as a system library
 - pkg-config
 - Standard Linux dev headers: X11, OpenGL, ALSA
@@ -17,10 +17,13 @@ On Ubuntu/Debian:
 ```bash
 sudo apt update
 sudo apt install -y \
-  build-essential clang cmake git pkg-config \
+  build-essential clang lld cmake git pkg-config \
   libasound2-dev libgl1-mesa-dev libglu1-mesa-dev \
   libx11-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev
 ```
+
+Prefer Clang 16 or newer (`clang --version`). On older distros, install a newer
+LLVM toolchain from your distribution's packages if the default Clang is below 16.
 
 On Fedora:
 
@@ -70,7 +73,14 @@ Compile the core module:
 sbt core/compile
 ```
 
-Run the ABI check (validates struct sizes match raylib 6.0):
+Run the headless FFI / ownership checks:
+
+```bash
+sbt ffiSafety/run
+```
+
+Run the graphical ABI smoke test (needs a display; on headless machines use
+`xvfb-run -a sbt abiCheck/run`):
 
 ```bash
 sbt abiCheck/run
@@ -89,8 +99,8 @@ Build all examples at once:
 sbt check
 ```
 
-This compiles core, runs the ABI check, and links every example binary. It's the
-same command CI runs.
+This compiles core, runs `ffiSafety` and `abiCheck`, and links every example
+binary. CI runs the same command under Xvfb.
 
 ## Using rayscal from another sbt project
 
@@ -105,8 +115,8 @@ From the rayscal repository:
 sbt core/publishLocal
 ```
 
-This publishes `io.github.rayscal:rayscal-core_3:0.1.0-SNAPSHOT` to your local
-`~/.ivy2/local` cache.
+This publishes `io.github.rayscal:rayscal-core_native0.5_3:0.2.1` to your local
+Ivy/Coursier cache (Scala Native cross version included in the artifact name).
 
 ### Step 2: Set up your project
 
@@ -115,13 +125,13 @@ Your project needs the Scala Native sbt plugin and must link against raylib.
 **project/build.properties:**
 
 ```properties
-sbt.version=1.12.11
+sbt.version=1.12.14
 ```
 
 **project/plugins.sbt:**
 
 ```scala
-addSbtPlugin("org.scala-native" % "sbt-scala-native" % "0.5.9")
+addSbtPlugin("org.scala-native" % "sbt-scala-native" % "0.5.12")
 ```
 
 **build.sbt:**
@@ -145,14 +155,14 @@ def raylibCompileOptions: Seq[String] =
     .map(_.split("\\s+").toSeq)
     .getOrElse(Seq.empty)
 
-ThisBuild / scalaVersion := "3.7.3"
+ThisBuild / scalaVersion := "3.8.4"
 
 lazy val root = project
   .in(file("."))
   .enablePlugins(ScalaNativePlugin)
   .settings(
     name := "my-game",
-    libraryDependencies += "io.github.rayscal" %%% "rayscal-core" % "0.1.0-SNAPSHOT",
+    libraryDependencies += "io.github.rayscal" %%% "rayscal-core" % "0.2.1",
     nativeConfig ~= { c =>
       c.withLinkingOptions(c.linkingOptions ++ raylibLinkOptions)
        .withCompileOptions(c.compileOptions ++ raylibCompileOptions)
@@ -160,20 +170,22 @@ lazy val root = project
   )
 ```
 
-rayscal is a binding, not a bundled copy of raylib. Your binary links against the
-system `libraylib.so` at link time and loads it at runtime. `pkg-config` picks up
-the right flags automatically when raylib was installed normally.
+Use `%%%` so sbt resolves the Scala Native artifact. rayscal is a binding, not a
+bundled copy of raylib. Your binary links against the system `libraylib.so` at
+link time and loads it at runtime. `pkg-config` picks up the right flags
+automatically when raylib was installed normally.
 
 ### Step 3: Build and run
 
 ```bash
-sbt run           # compile and launch
-sbt nativeLink    # compile to a standalone native binary in target/scala-3.7.3/
+sbt run           # compile and launch (from your project's root)
+sbt nativeLink    # compile to a native binary under target/scala-<version>/
 ```
 
-The native binary is self-contained. It needs `libraylib.so` on the library
-path at runtime but does not need sbt, JVM, or Scala installed on the target
-machine.
+rayscal produces a standalone native executable but the system raylib shared
+library must be available at runtime unless the application is explicitly
+configured for static linking. The binary does not need sbt, a JVM, or Scala
+installed on the target machine.
 
 ## Producing a distributable binary
 
@@ -181,9 +193,9 @@ machine.
 sbt nativeLink
 ```
 
-The output binary lands in `target/scala-3.7.3/<project-name>`. It's a regular
-ELF binary. Copy it to any Linux machine with raylib 6.0 installed and run it
-directly.
+The output binary lands under `target/scala-<version>/` (named after your sbt
+project). It's a regular ELF binary. Copy it to a Linux machine that has raylib
+6.0 available at runtime and run it directly.
 
 If you want a static binary, you'll need a static build of raylib (`-DBUILD_SHARED_LIBS=OFF`)
 and may need to adjust linker flags to include all transitive dependencies
@@ -192,8 +204,9 @@ and may need to adjust linker flags to include all transitive dependencies
 ## CI
 
 The GitHub Actions workflow (`.github/workflows/ci.yml`) builds raylib 6.0 from
-source, then runs `sbt check` on every push and pull request. A separate
-release workflow builds and uploads the native binary when a tag is pushed.
+source, then runs `xvfb-run -a sbt check` on every push and pull request. A
+separate release workflow builds and uploads example binaries when a `v*` tag is
+pushed.
 
 ## Troubleshooting
 

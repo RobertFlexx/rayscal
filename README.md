@@ -6,8 +6,8 @@
 Scala Native bindings for [raylib](https://www.raylib.com/) 6.0.
 
 [![CI](https://github.com/RobertFlexx/rayscal/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertFlexx/rayscal/actions)
-[![Scala 3](https://img.shields.io/badge/Scala-3.7-DC322F.svg)](https://scala-lang.org)
-[![Scala Native](https://img.shields.io/badge/Scala%20Native-0.5-blueviolet.svg)](https://scala-native.org)
+[![Scala 3](https://img.shields.io/badge/Scala-3.8-DC322F.svg)](https://scala-lang.org)
+[![Scala Native](https://img.shields.io/badge/Scala%20Native-0.5.12-blueviolet.svg)](https://scala-native.org)
 [![raylib](https://img.shields.io/badge/raylib-6.0-ff6347.svg)](https://www.raylib.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -58,22 +58,45 @@ import rayscal.*
           Shapes.circleLines(400, 280, 48, Colors.BLUE)
 ```
 
-Build and run:
+Build and run the hello example from the repository root:
 
 ```bash
-sbt run
+sbt helloWindow/run
 ```
+
+(`sbt run` alone does not work here — the root project is an aggregate, not an
+executable example.)
+
+## Supported versions
+
+| Component | Status |
+|---|---|
+| **raylib** | **6.0.x required** (enforced at build time via `pkg-config`) |
+| **Scala** | **3.8.4** pinned and tested in this repository |
+| **Scala Native** | **0.5.12** pinned and tested in this repository |
+| **sbt** | **1.12.14** pinned and tested in this repository |
+| **JDK** | **17+** minimum; **21** (Temurin) used in CI |
+| **LLVM / Clang** | **16+** recommended (Scala Native 0.5.12 deprecates older toolchains) |
+| **OS / arch** | **Linux x86_64** tested in CI (Ubuntu, X11 via Xvfb) |
+
+Other Scala 3.8.x / Scala Native 0.5.x combinations, other Linux setups, Wayland,
+macOS, and Windows may work but are **not** tested here. Do not assume broad
+production support beyond what CI verifies.
+
+rayscal targets **Scala Native** only. JVM-only Java bindings such as jaylib are
+not a substitute for Scala Native applications.
 
 ## Requirements
 
-- JDK 17+
-- sbt 1.x
-- Scala Native toolchain (Clang, LLVM, lld)
+- JDK 17+ (CI uses Temurin 21)
+- sbt 1.12.14 (see `project/build.properties`)
+- Scala Native toolchain: Clang / LLVM **16+** recommended (lld)
 - raylib 6.0 installed as a shared library
-- Linux (X11 or Wayland)
+- Linux with a working display (or Xvfb for headless CI-style runs)
 
 See [BUILDING.md](BUILDING.md) for detailed setup instructions, troubleshooting,
-and how to use rayscal from your own sbt project.
+`publishLocal` dependency usage, and how to use rayscal from your own sbt
+project.
 
 ---
 
@@ -88,7 +111,8 @@ sbt check                       # compile, ffiSafety, abiCheck, link all example
 ```
 
 Headless `ffiSafety` must pass with real assertions (nonzero exit on failure).
-Graphical `abiCheck` is a separate smoke test that opens a tiny window.
+Graphical `abiCheck` is a separate smoke test that opens a tiny window (CI runs
+it under Xvfb).
 
 ## Examples
 
@@ -254,9 +278,11 @@ shims (or extend `rayscal.c`) — do not add by-value `@extern` declarations.
 ## Links
 
 - [BUILDING.md](BUILDING.md) -- build instructions, project setup, troubleshooting
+- [CONTRIBUTING.md](CONTRIBUTING.md) -- binding and ownership rules for contributors
 - [raylib documentation](https://www.raylib.com/)
 - [Scala Native](https://scala-native.org)
 - [raylib GitHub](https://github.com/raysan5/raylib)
+- [GitHub Releases](https://github.com/RobertFlexx/rayscal/releases)
 
 ---
 

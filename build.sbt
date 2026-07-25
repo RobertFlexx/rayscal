@@ -57,8 +57,8 @@ def hostDynamicLinkerOptions: Seq[String] = {
 }
 
 ThisBuild / organization := "io.github.rayscal"
-ThisBuild / scalaVersion := "3.7.3"
-ThisBuild / version := "0.2.0"
+ThisBuild / scalaVersion := "3.8.4"
+ThisBuild / version := "0.2.1"
 ThisBuild / licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
 ThisBuild / description := "Scala Native bindings for raylib"
 ThisBuild / versionScheme := Some("early-semver")

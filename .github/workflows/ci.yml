@@ -29,6 +29,7 @@ jobs:
           sudo apt-get install -y \
             build-essential \
             clang \
+            lld \
             cmake \
             git \
             libasound2-dev \
@@ -42,6 +43,13 @@ jobs:
             libxrandr-dev \
             pkg-config \
             xvfb
+          clang --version
+          # Scala Native 0.5.12 recommends LLVM/Clang 16+; fail early if older.
+          clang_major="$(clang -dumpversion | cut -d. -f1)"
+          if [ "${clang_major}" -lt 16 ]; then
+            echo "Clang ${clang_major} is below the recommended minimum of 16" >&2
+            exit 1
+          fi
 
       - name: Build raylib
         run: |
