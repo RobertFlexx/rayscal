@@ -4,11 +4,9 @@ import rayscal.raw.{Raylib, RayscalNative}
 import scala.scalanative.unsafe.Zone
 import scala.scalanative.unsafe.fromCString
 import scala.scalanative.unsafe.toCString
-import scala.scalanative.unsafe.stackalloc
 import scala.scalanative.unsigned.*
 
 object Keys:
-  // Values mirror raylib's KeyboardKey enum.
   val Right: Int = 262
   val Left: Int = 263
   val Down: Int = 264
@@ -25,29 +23,14 @@ object Keys:
   val W: Int = 87
 
 object Keyboard:
-  def isDown(key: Int): Boolean =
-    Raylib.IsKeyDown(key)
-
-  def isPressed(key: Int): Boolean =
-    Raylib.IsKeyPressed(key)
-
-  def isPressedRepeat(key: Int): Boolean =
-    Raylib.IsKeyPressedRepeat(key)
-
-  def isReleased(key: Int): Boolean =
-    Raylib.IsKeyReleased(key)
-
-  def isUp(key: Int): Boolean =
-    Raylib.IsKeyUp(key)
-
-  def getPressed: Int =
-    Raylib.GetKeyPressed()
-
-  def getCharPressed: Int =
-    Raylib.GetCharPressed()
-
-  def setExitKey(key: Int): Unit =
-    Raylib.SetExitKey(key)
+  def isDown(key: Int): Boolean = Raylib.IsKeyDown(key)
+  def isPressed(key: Int): Boolean = Raylib.IsKeyPressed(key)
+  def isPressedRepeat(key: Int): Boolean = Raylib.IsKeyPressedRepeat(key)
+  def isReleased(key: Int): Boolean = Raylib.IsKeyReleased(key)
+  def isUp(key: Int): Boolean = Raylib.IsKeyUp(key)
+  def getPressed: Int = Raylib.GetKeyPressed()
+  def getCharPressed: Int = Raylib.GetCharPressed()
+  def setExitKey(key: Int): Unit = Raylib.SetExitKey(key)
 
 object MouseButtons:
   val Left: Int = 0
@@ -59,67 +42,27 @@ object MouseButtons:
   val Back: Int = 6
 
 object Mouse:
-  def isPressed(button: Int): Boolean =
-    Raylib.IsMouseButtonPressed(button)
-
-  def isDown(button: Int): Boolean =
-    Raylib.IsMouseButtonDown(button)
-
-  def isReleased(button: Int): Boolean =
-    Raylib.IsMouseButtonReleased(button)
-
-  def isUp(button: Int): Boolean =
-    Raylib.IsMouseButtonUp(button)
-
-  def x: Int =
-    Raylib.GetMouseX()
-
-  def y: Int =
-    Raylib.GetMouseY()
-
-  def position(using Zone): Vector2 =
-    Vector.vector2(x.toFloat, y.toFloat)
-
-  def delta: Vector2 =
-    val out = stackalloc[Vector2]()
-    RayscalNative.GetMouseDelta(out)
-    !out
-
-  def setPosition(x: Int, y: Int): Unit =
-    Raylib.SetMousePosition(x, y)
-
-  def setOffset(x: Int, y: Int): Unit =
-    Raylib.SetMouseOffset(x, y)
-
-  def setScale(x: Float, y: Float): Unit =
-    Raylib.SetMouseScale(x, y)
-
-  def wheel: Float =
-    Raylib.GetMouseWheelMove()
-
-  def wheelVector: Vector2 =
-    val out = stackalloc[Vector2]()
-    RayscalNative.GetMouseWheelMoveV(out)
-    !out
+  def isPressed(button: Int): Boolean = Raylib.IsMouseButtonPressed(button)
+  def isDown(button: Int): Boolean = Raylib.IsMouseButtonDown(button)
+  def isReleased(button: Int): Boolean = Raylib.IsMouseButtonReleased(button)
+  def isUp(button: Int): Boolean = Raylib.IsMouseButtonUp(button)
+  def x: Int = Raylib.GetMouseX()
+  def y: Int = Raylib.GetMouseY()
+  def position: Vector2 = Vector2(x.toFloat, y.toFloat)
+  def delta: Vector2 = NativeMarshal.readVector2(RayscalNative.GetMouseDelta(_))
+  def setPosition(x: Int, y: Int): Unit = Raylib.SetMousePosition(x, y)
+  def setOffset(x: Int, y: Int): Unit = Raylib.SetMouseOffset(x, y)
+  def setScale(x: Float, y: Float): Unit = Raylib.SetMouseScale(x, y)
+  def wheel: Float = Raylib.GetMouseWheelMove()
+  def wheelVector: Vector2 = NativeMarshal.readVector2(RayscalNative.GetMouseWheelMoveV(_))
 
 object Cursor:
-  def show(): Unit =
-    Raylib.ShowCursor()
-
-  def hide(): Unit =
-    Raylib.HideCursor()
-
-  def isHidden: Boolean =
-    Raylib.IsCursorHidden()
-
-  def enable(): Unit =
-    Raylib.EnableCursor()
-
-  def disable(): Unit =
-    Raylib.DisableCursor()
-
-  def isOnScreen: Boolean =
-    Raylib.IsCursorOnScreen()
+  def show(): Unit = Raylib.ShowCursor()
+  def hide(): Unit = Raylib.HideCursor()
+  def isHidden: Boolean = Raylib.IsCursorHidden()
+  def enable(): Unit = Raylib.EnableCursor()
+  def disable(): Unit = Raylib.DisableCursor()
+  def isOnScreen: Boolean = Raylib.IsCursorOnScreen()
 
 object GamepadButtons:
   val Unknown: Int = 0
@@ -150,55 +93,28 @@ object GamepadAxes:
   val RightTrigger: Int = 5
 
 object Gamepads:
-  def isAvailable(gamepad: Int): Boolean =
-    Raylib.IsGamepadAvailable(gamepad)
-
+  def isAvailable(gamepad: Int): Boolean = Raylib.IsGamepadAvailable(gamepad)
   def name(gamepad: Int): String =
     val value = Raylib.GetGamepadName(gamepad)
     if value == null then "" else fromCString(value)
-
-  def isPressed(gamepad: Int, button: Int): Boolean =
-    Raylib.IsGamepadButtonPressed(gamepad, button)
-
-  def isDown(gamepad: Int, button: Int): Boolean =
-    Raylib.IsGamepadButtonDown(gamepad, button)
-
-  def isReleased(gamepad: Int, button: Int): Boolean =
-    Raylib.IsGamepadButtonReleased(gamepad, button)
-
-  def isUp(gamepad: Int, button: Int): Boolean =
-    Raylib.IsGamepadButtonUp(gamepad, button)
-
-  def buttonPressed: Int =
-    Raylib.GetGamepadButtonPressed()
-
-  def axisCount(gamepad: Int): Int =
-    Raylib.GetGamepadAxisCount(gamepad)
-
-  def axisMovement(gamepad: Int, axis: Int): Float =
-    Raylib.GetGamepadAxisMovement(gamepad, axis)
-
+  def isPressed(gamepad: Int, button: Int): Boolean = Raylib.IsGamepadButtonPressed(gamepad, button)
+  def isDown(gamepad: Int, button: Int): Boolean = Raylib.IsGamepadButtonDown(gamepad, button)
+  def isReleased(gamepad: Int, button: Int): Boolean = Raylib.IsGamepadButtonReleased(gamepad, button)
+  def isUp(gamepad: Int, button: Int): Boolean = Raylib.IsGamepadButtonUp(gamepad, button)
+  def buttonPressed: Int = Raylib.GetGamepadButtonPressed()
+  def axisCount(gamepad: Int): Int = Raylib.GetGamepadAxisCount(gamepad)
+  def axisMovement(gamepad: Int, axis: Int): Float = Raylib.GetGamepadAxisMovement(gamepad, axis)
   def setMappings(mappings: String): Int =
     Zone:
       Raylib.SetGamepadMappings(toCString(mappings))
 
 object Touch:
-  def x: Int =
-    Raylib.GetTouchX()
-
-  def y: Int =
-    Raylib.GetTouchY()
-
+  def x: Int = Raylib.GetTouchX()
+  def y: Int = Raylib.GetTouchY()
   def position(index: Int): Vector2 =
-    val out = stackalloc[Vector2]()
-    RayscalNative.GetTouchPosition(out, index)
-    !out
-
-  def id(index: Int): Int =
-    Raylib.GetTouchPointId(index)
-
-  def count: Int =
-    Raylib.GetTouchPointCount()
+    NativeMarshal.readVector2(out => RayscalNative.GetTouchPosition(out, index))
+  def id(index: Int): Int = Raylib.GetTouchPointId(index)
+  def count: Int = Raylib.GetTouchPointCount()
 
 object Gestures:
   val None: Int = 0
@@ -213,30 +129,11 @@ object Gestures:
   val PinchIn: Int = 256
   val PinchOut: Int = 512
 
-  def setEnabled(flags: Int): Unit =
-    Raylib.SetGesturesEnabled(flags.toUInt)
-
-  def isDetected(gesture: Int): Boolean =
-    Raylib.IsGestureDetected(gesture.toUInt)
-
-  def detected: Int =
-    Raylib.GetGestureDetected()
-
-  def holdDuration: Float =
-    Raylib.GetGestureHoldDuration()
-
-  def dragVector: Vector2 =
-    val out = stackalloc[Vector2]()
-    RayscalNative.GetGestureDragVector(out)
-    !out
-
-  def dragAngle: Float =
-    Raylib.GetGestureDragAngle()
-
-  def pinchVector: Vector2 =
-    val out = stackalloc[Vector2]()
-    RayscalNative.GetGesturePinchVector(out)
-    !out
-
-  def pinchAngle: Float =
-    Raylib.GetGesturePinchAngle()
+  def setEnabled(flags: Int): Unit = Raylib.SetGesturesEnabled(flags.toUInt)
+  def isDetected(gesture: Int): Boolean = Raylib.IsGestureDetected(gesture.toUInt)
+  def detected: Int = Raylib.GetGestureDetected()
+  def holdDuration: Float = Raylib.GetGestureHoldDuration()
+  def dragVector: Vector2 = NativeMarshal.readVector2(RayscalNative.GetGestureDragVector(_))
+  def dragAngle: Float = Raylib.GetGestureDragAngle()
+  def pinchVector: Vector2 = NativeMarshal.readVector2(RayscalNative.GetGesturePinchVector(_))
+  def pinchAngle: Float = Raylib.GetGesturePinchAngle()

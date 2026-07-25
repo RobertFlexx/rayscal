@@ -2,6 +2,12 @@ package rayscal.raw
 
 import scala.scalanative.unsafe.*
 
+/** Safe raylib @extern bindings.
+  *
+  * Only primitives, enums, C strings, callbacks, and pointers are allowed.
+  * Struct-by-value arguments and returns are intentionally absent; use
+  * [[RayscalNative]] pointer shims instead.
+  */
 @extern
 @link("raylib")
 object Raylib:
@@ -33,57 +39,26 @@ object Raylib:
   def SetWindowFocused(): Unit = extern
   def GetMonitorCount(): CInt = extern
   def GetCurrentMonitor(): CInt = extern
-  def GetMonitorPosition(monitor: CInt): Vector2 = extern
   def GetMonitorWidth(monitor: CInt): CInt = extern
   def GetMonitorHeight(monitor: CInt): CInt = extern
   def GetMonitorPhysicalWidth(monitor: CInt): CInt = extern
   def GetMonitorPhysicalHeight(monitor: CInt): CInt = extern
   def GetMonitorRefreshRate(monitor: CInt): CInt = extern
-  def GetWindowPosition(): Vector2 = extern
-  def GetWindowScaleDPI(): Vector2 = extern
 
   def BeginDrawing(): Unit = extern
   def EndDrawing(): Unit = extern
-  def ClearBackground(color: Color): Unit = extern
-  def BeginMode2D(camera: Camera2D): Unit = extern
   def EndMode2D(): Unit = extern
-  def BeginMode3D(camera: Camera3D): Unit = extern
   def EndMode3D(): Unit = extern
-  def BeginTextureMode(target: RenderTexture2D): Unit = extern
   def EndTextureMode(): Unit = extern
-  def BeginShaderMode(shader: Shader): Unit = extern
   def EndShaderMode(): Unit = extern
   def BeginBlendMode(mode: CInt): Unit = extern
   def EndBlendMode(): Unit = extern
   def BeginScissorMode(x: CInt, y: CInt, width: CInt, height: CInt): Unit = extern
   def EndScissorMode(): Unit = extern
 
-  def DrawText(text: CString, posX: CInt, posY: CInt, fontSize: CInt, color: Color): Unit = extern
   def DrawFPS(posX: CInt, posY: CInt): Unit = extern
   def SetTextLineSpacing(spacing: CInt): Unit = extern
   def MeasureText(text: CString, fontSize: CInt): CInt = extern
-
-  def DrawPixel(posX: CInt, posY: CInt, color: Color): Unit = extern
-  def DrawPixelV(position: Vector2, color: Color): Unit = extern
-  def DrawLine(startPosX: CInt, startPosY: CInt, endPosX: CInt, endPosY: CInt, color: Color): Unit = extern
-  def DrawLineV(startPos: Vector2, endPos: Vector2, color: Color): Unit = extern
-  def DrawLineEx(startPos: Vector2, endPos: Vector2, thick: CFloat, color: Color): Unit = extern
-  def DrawCircle(centerX: CInt, centerY: CInt, radius: CFloat, color: Color): Unit = extern
-  def DrawCircleV(center: Vector2, radius: CFloat, color: Color): Unit = extern
-  def DrawCircleLines(centerX: CInt, centerY: CInt, radius: CFloat, color: Color): Unit = extern
-  def DrawEllipse(centerX: CInt, centerY: CInt, radiusH: CFloat, radiusV: CFloat, color: Color): Unit = extern
-  def DrawEllipseLines(centerX: CInt, centerY: CInt, radiusH: CFloat, radiusV: CFloat, color: Color): Unit = extern
-  def DrawRing(center: Vector2, innerRadius: CFloat, outerRadius: CFloat, startAngle: CFloat, endAngle: CFloat, segments: CInt, color: Color): Unit = extern
-  def DrawRectangle(posX: CInt, posY: CInt, width: CInt, height: CInt, color: Color): Unit = extern
-  def DrawRectangleV(position: Vector2, size: Vector2, color: Color): Unit = extern
-  def DrawRectangleRec(rec: Rectangle, color: Color): Unit = extern
-  def DrawRectangleLines(posX: CInt, posY: CInt, width: CInt, height: CInt, color: Color): Unit = extern
-  def DrawRectangleLinesEx(rec: Rectangle, lineThick: CFloat, color: Color): Unit = extern
-  def DrawTriangle(v1: Vector2, v2: Vector2, v3: Vector2, color: Color): Unit = extern
-  def DrawTriangleLines(v1: Vector2, v2: Vector2, v3: Vector2, color: Color): Unit = extern
-  def DrawPoly(center: Vector2, sides: CInt, radius: CFloat, rotation: CFloat, color: Color): Unit = extern
-  def DrawPolyLines(center: Vector2, sides: CInt, radius: CFloat, rotation: CFloat, color: Color): Unit = extern
-  def DrawPolyLinesEx(center: Vector2, sides: CInt, radius: CFloat, rotation: CFloat, lineThick: CFloat, color: Color): Unit = extern
 
   def SetTargetFPS(fps: CInt): Unit = extern
   def GetFrameTime(): CFloat = extern
@@ -114,13 +89,10 @@ object Raylib:
   def IsMouseButtonUp(button: CInt): CBool = extern
   def GetMouseX(): CInt = extern
   def GetMouseY(): CInt = extern
-  def GetMousePosition(): Vector2 = extern
-  def GetMouseDelta(): Vector2 = extern
   def SetMousePosition(x: CInt, y: CInt): Unit = extern
   def SetMouseOffset(offsetX: CInt, offsetY: CInt): Unit = extern
   def SetMouseScale(scaleX: CFloat, scaleY: CFloat): Unit = extern
   def GetMouseWheelMove(): CFloat = extern
-  def GetMouseWheelMoveV(): Vector2 = extern
   def SetMouseCursor(cursor: CInt): Unit = extern
   def ShowCursor(): Unit = extern
   def HideCursor(): Unit = extern
@@ -142,7 +114,6 @@ object Raylib:
 
   def GetTouchX(): CInt = extern
   def GetTouchY(): CInt = extern
-  def GetTouchPosition(index: CInt): Vector2 = extern
   def GetTouchPointId(index: CInt): CInt = extern
   def GetTouchPointCount(): CInt = extern
 
@@ -150,158 +121,31 @@ object Raylib:
   def IsGestureDetected(gesture: CUnsignedInt): CBool = extern
   def GetGestureDetected(): CInt = extern
   def GetGestureHoldDuration(): CFloat = extern
-  def GetGestureDragVector(): Vector2 = extern
   def GetGestureDragAngle(): CFloat = extern
-  def GetGesturePinchVector(): Vector2 = extern
   def GetGesturePinchAngle(): CFloat = extern
 
-  def LoadImage(fileName: CString): Image = extern
-  def GenImageColor(width: CInt, height: CInt, color: Color): Image = extern
-  def GenImageChecked(width: CInt, height: CInt, checksX: CInt, checksY: CInt, col1: Color, col2: Color): Image = extern
-  def GenImageGradientLinear(width: CInt, height: CInt, direction: CInt, start: Color, end: Color): Image = extern
-  def GenImageGradientRadial(width: CInt, height: CInt, density: CFloat, inner: Color, outer: Color): Image = extern
-  def GenImagePerlinNoise(width: CInt, height: CInt, offsetX: CInt, offsetY: CInt, scale: CFloat): Image = extern
-  def GenImageCellular(width: CInt, height: CInt, tileSize: CInt): Image = extern
-  def ImageCopy(image: Image): Image = extern
-  def ImageCrop(image: Ptr[Image], crop: Rectangle): Unit = extern
   def ImageResize(image: Ptr[Image], newWidth: CInt, newHeight: CInt): Unit = extern
   def ImageResizeNN(image: Ptr[Image], newWidth: CInt, newHeight: CInt): Unit = extern
   def ImageMipmaps(image: Ptr[Image]): Unit = extern
   def ImageFlipVertical(image: Ptr[Image]): Unit = extern
   def ImageFlipHorizontal(image: Ptr[Image]): Unit = extern
   def ImageRotate(image: Ptr[Image], degrees: CInt): Unit = extern
-  def ImageColorTint(image: Ptr[Image], color: Color): Unit = extern
   def ImageColorInvert(image: Ptr[Image]): Unit = extern
   def ImageColorGrayscale(image: Ptr[Image]): Unit = extern
   def ImageColorContrast(image: Ptr[Image], contrast: CFloat): Unit = extern
   def ImageColorBrightness(image: Ptr[Image], brightness: CInt): Unit = extern
-  def IsImageValid(image: Image): CBool = extern
-  def UnloadImage(image: Image): Unit = extern
-  def ExportImage(image: Image, fileName: CString): CBool = extern
 
-  def LoadTexture(fileName: CString): Texture2D = extern
-  def LoadTextureFromImage(image: Image): Texture2D = extern
-  def LoadRenderTexture(width: CInt, height: CInt): RenderTexture2D = extern
-  def IsTextureValid(texture: Texture2D): CBool = extern
-  def UnloadTexture(texture: Texture2D): Unit = extern
-  def IsRenderTextureValid(target: RenderTexture2D): CBool = extern
-  def UnloadRenderTexture(target: RenderTexture2D): Unit = extern
-  def UpdateTexture(texture: Texture2D, pixels: Ptr[Byte]): Unit = extern
-  def UpdateTextureRec(texture: Texture2D, rec: Rectangle, pixels: Ptr[Byte]): Unit = extern
   def GenTextureMipmaps(texture: Ptr[Texture2D]): Unit = extern
-  def SetTextureFilter(texture: Texture2D, filter: CInt): Unit = extern
-  def SetTextureWrap(texture: Texture2D, wrap: CInt): Unit = extern
-  def DrawTexture(texture: Texture2D, posX: CInt, posY: CInt, tint: Color): Unit = extern
-  def DrawTextureV(texture: Texture2D, position: Vector2, tint: Color): Unit = extern
-  def DrawTextureEx(texture: Texture2D, position: Vector2, rotation: CFloat, scale: CFloat, tint: Color): Unit = extern
-  def DrawTextureRec(texture: Texture2D, source: Rectangle, position: Vector2, tint: Color): Unit = extern
-  def DrawTexturePro(texture: Texture2D, source: Rectangle, dest: Rectangle, origin: Vector2, rotation: CFloat, tint: Color): Unit = extern
 
-  def LoadShader(vsFileName: CString, fsFileName: CString): Shader = extern
-  def LoadShaderFromMemory(vsCode: CString, fsCode: CString): Shader = extern
-  def IsShaderValid(shader: Shader): CBool = extern
-  def GetShaderLocation(shader: Shader, uniformName: CString): CInt = extern
-  def GetShaderLocationAttrib(shader: Shader, attribName: CString): CInt = extern
-  def SetShaderValue(shader: Shader, locIndex: CInt, value: Ptr[Byte], uniformType: CInt): Unit = extern
-  def SetShaderValueV(shader: Shader, locIndex: CInt, value: Ptr[Byte], uniformType: CInt, count: CInt): Unit = extern
-  def SetShaderValueMatrix(shader: Shader, locIndex: CInt, mat: Matrix): Unit = extern
-  def SetShaderValueTexture(shader: Shader, locIndex: CInt, texture: Texture2D): Unit = extern
-  def UnloadShader(shader: Shader): Unit = extern
-
-  def GetScreenToWorldRay(position: Vector2, camera: Camera): Ray = extern
-  def GetScreenToWorldRayEx(position: Vector2, camera: Camera, width: CInt, height: CInt): Ray = extern
-  def GetWorldToScreen(position: Vector3, camera: Camera): Vector2 = extern
-  def GetWorldToScreenEx(position: Vector3, camera: Camera, width: CInt, height: CInt): Vector2 = extern
-  def GetWorldToScreen2D(position: Vector2, camera: Camera2D): Vector2 = extern
-  def GetScreenToWorld2D(position: Vector2, camera: Camera2D): Vector2 = extern
-  def GetCameraMatrix(camera: Camera): Matrix = extern
-  def GetCameraMatrix2D(camera: Camera2D): Matrix = extern
   def UpdateCamera(camera: Ptr[Camera3D], mode: CInt): Unit = extern
-  def UpdateCameraPro(camera: Ptr[Camera3D], movement: Vector3, rotation: Vector3, zoom: CFloat): Unit = extern
 
-  def ColorIsEqual(col1: Color, col2: Color): CBool = extern
-  def Fade(color: Color, alpha: CFloat): Color = extern
-  def ColorToInt(color: Color): CInt = extern
-  def ColorNormalize(color: Color): Vector4 = extern
-  def ColorFromNormalized(normalized: Vector4): Color = extern
-  def ColorToHSV(color: Color): Vector3 = extern
-  def ColorFromHSV(hue: CFloat, saturation: CFloat, value: CFloat): Color = extern
-  def ColorTint(color: Color, tint: Color): Color = extern
-  def ColorBrightness(color: Color, factor: CFloat): Color = extern
-
-  def CheckCollisionRecs(rec1: Rectangle, rec2: Rectangle): CBool = extern
-  def CheckCollisionCircles(center1: Vector2, radius1: CFloat, center2: Vector2, radius2: CFloat): CBool = extern
-  def CheckCollisionCircleRec(center: Vector2, radius: CFloat, rec: Rectangle): CBool = extern
-  def CheckCollisionPointRec(point: Vector2, rec: Rectangle): CBool = extern
-  def CheckCollisionPointCircle(point: Vector2, center: Vector2, radius: CFloat): CBool = extern
-  def CheckCollisionPointTriangle(point: Vector2, p1: Vector2, p2: Vector2, p3: Vector2): CBool = extern
-  def GetCollisionRec(rec1: Rectangle, rec2: Rectangle): Rectangle = extern
-
-  def DrawLine3D(startPos: Vector3, endPos: Vector3, color: Color): Unit = extern
-  def DrawPoint3D(position: Vector3, color: Color): Unit = extern
-  def DrawCircle3D(center: Vector3, radius: CFloat, rotationAxis: Vector3, rotationAngle: CFloat, color: Color): Unit = extern
-  def DrawTriangle3D(v1: Vector3, v2: Vector3, v3: Vector3, color: Color): Unit = extern
-  def DrawCube(position: Vector3, width: CFloat, height: CFloat, length: CFloat, color: Color): Unit = extern
-  def DrawCubeV(position: Vector3, size: Vector3, color: Color): Unit = extern
-  def DrawCubeWires(position: Vector3, width: CFloat, height: CFloat, length: CFloat, color: Color): Unit = extern
-  def DrawCubeWiresV(position: Vector3, size: Vector3, color: Color): Unit = extern
-  def DrawSphere(centerPos: Vector3, radius: CFloat, color: Color): Unit = extern
-  def DrawSphereEx(centerPos: Vector3, radius: CFloat, rings: CInt, slices: CInt, color: Color): Unit = extern
-  def DrawSphereWires(centerPos: Vector3, radius: CFloat, rings: CInt, slices: CInt, color: Color): Unit = extern
-  def DrawCylinder(position: Vector3, radiusTop: CFloat, radiusBottom: CFloat, height: CFloat, slices: CInt, color: Color): Unit = extern
-  def DrawCylinderEx(startPos: Vector3, endPos: Vector3, startRadius: CFloat, endRadius: CFloat, sides: CInt, color: Color): Unit = extern
-  def DrawCylinderWires(position: Vector3, radiusTop: CFloat, radiusBottom: CFloat, height: CFloat, slices: CInt, color: Color): Unit = extern
-  def DrawCylinderWiresEx(startPos: Vector3, endPos: Vector3, startRadius: CFloat, endRadius: CFloat, sides: CInt, color: Color): Unit = extern
-  def DrawCapsule(startPos: Vector3, endPos: Vector3, radius: CFloat, slices: CInt, rings: CInt, color: Color): Unit = extern
-  def DrawCapsuleWires(startPos: Vector3, endPos: Vector3, radius: CFloat, slices: CInt, rings: CInt, color: Color): Unit = extern
-  def DrawPlane(centerPos: Vector3, size: Vector2, color: Color): Unit = extern
-  def DrawRay(ray: Ray, color: Color): Unit = extern
   def DrawGrid(slices: CInt, spacing: CFloat): Unit = extern
-  def CheckCollisionSpheres(center1: Vector3, radius1: CFloat, center2: Vector3, radius2: CFloat): CBool = extern
-  def CheckCollisionBoxes(box1: BoundingBox, box2: BoundingBox): CBool = extern
-  def CheckCollisionBoxSphere(box: BoundingBox, center: Vector3, radius: CFloat): CBool = extern
-  def GetRayCollisionSphere(ray: Ray, center: Vector3, radius: CFloat): RayCollision = extern
-  def GetRayCollisionBox(ray: Ray, box: BoundingBox): RayCollision = extern
-  def GetRayCollisionTriangle(ray: Ray, p1: Vector3, p2: Vector3, p3: Vector3): RayCollision = extern
-  def GetRayCollisionQuad(ray: Ray, p1: Vector3, p2: Vector3, p3: Vector3, p4: Vector3): RayCollision = extern
 
   def InitAudioDevice(): Unit = extern
   def CloseAudioDevice(): Unit = extern
   def IsAudioDeviceReady(): CBool = extern
   def SetMasterVolume(volume: CFloat): Unit = extern
   def GetMasterVolume(): CFloat = extern
-  def LoadWave(fileName: CString): Wave = extern
-  def IsWaveValid(wave: Wave): CBool = extern
-  def LoadSound(fileName: CString): Sound = extern
-  def LoadSoundFromWave(wave: Wave): Sound = extern
-  def LoadSoundAlias(source: Sound): Sound = extern
-  def IsSoundValid(sound: Sound): CBool = extern
-  def UnloadWave(wave: Wave): Unit = extern
-  def UnloadSound(sound: Sound): Unit = extern
-  def UnloadSoundAlias(alias: Sound): Unit = extern
-  def PlaySound(sound: Sound): Unit = extern
-  def StopSound(sound: Sound): Unit = extern
-  def PauseSound(sound: Sound): Unit = extern
-  def ResumeSound(sound: Sound): Unit = extern
-  def IsSoundPlaying(sound: Sound): CBool = extern
-  def SetSoundVolume(sound: Sound, volume: CFloat): Unit = extern
-  def SetSoundPitch(sound: Sound, pitch: CFloat): Unit = extern
-  def SetSoundPan(sound: Sound, pan: CFloat): Unit = extern
-  def LoadMusicStream(fileName: CString): Music = extern
-  def IsMusicValid(music: Music): CBool = extern
-  def UnloadMusicStream(music: Music): Unit = extern
-  def PlayMusicStream(music: Music): Unit = extern
-  def IsMusicStreamPlaying(music: Music): CBool = extern
-  def UpdateMusicStream(music: Music): Unit = extern
-  def StopMusicStream(music: Music): Unit = extern
-  def PauseMusicStream(music: Music): Unit = extern
-  def ResumeMusicStream(music: Music): Unit = extern
-  def SeekMusicStream(music: Music, position: CFloat): Unit = extern
-  def SetMusicVolume(music: Music, volume: CFloat): Unit = extern
-  def SetMusicPitch(music: Music, pitch: CFloat): Unit = extern
-  def SetMusicPan(music: Music, pan: CFloat): Unit = extern
-  def GetMusicTimeLength(music: Music): CFloat = extern
-  def GetMusicTimePlayed(music: Music): CFloat = extern
 
   def FileExists(fileName: CString): CBool = extern
   def DirectoryExists(dirPath: CString): CBool = extern
@@ -316,5 +160,3 @@ object Raylib:
   def GetApplicationDirectory(): CString = extern
   def ChangeDirectory(dir: CString): CBool = extern
   def IsFileDropped(): CBool = extern
-  def LoadDroppedFiles(): FilePathList = extern
-  def UnloadDroppedFiles(files: FilePathList): Unit = extern

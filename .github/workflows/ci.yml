@@ -49,5 +49,8 @@ jobs:
           sudo cmake --install /tmp/raylib/build
           sudo ldconfig
 
+      - name: Public API FFI safety check
+        run: ./.github/check-ffi-safety.sh
+
       - name: Validate bindings and link examples
         run: sbt check

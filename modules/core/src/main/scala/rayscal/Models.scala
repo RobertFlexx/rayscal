@@ -63,24 +63,24 @@ object Models:
   def draw(model: Model, position: Vector3, scale: Float, tint: Color): Unit =
     Zone:
       model.requireLive()
-      RayscalNative.DrawModel(model.ptr, NativeCopies.vector3(position), scale, NativeCopies.color(tint))
+      RayscalNative.DrawModel(model.ptr, NativeMarshal.vector3(position), scale, NativeMarshal.color(tint))
 
   def draw(model: Model, position: Vector3, rotationAxis: Vector3, rotationAngle: Float, scale: Vector3, tint: Color): Unit =
     Zone:
       model.requireLive()
-      RayscalNative.DrawModelEx(model.ptr, NativeCopies.vector3(position), NativeCopies.vector3(rotationAxis), rotationAngle, NativeCopies.vector3(scale), NativeCopies.color(tint))
+      RayscalNative.DrawModelEx(model.ptr, NativeMarshal.vector3(position), NativeMarshal.vector3(rotationAxis), rotationAngle, NativeMarshal.vector3(scale), NativeMarshal.color(tint))
 
   def drawWires(model: Model, position: Vector3, scale: Float, tint: Color): Unit =
     Zone:
       model.requireLive()
-      RayscalNative.DrawModelWires(model.ptr, NativeCopies.vector3(position), scale, NativeCopies.color(tint))
+      RayscalNative.DrawModelWires(model.ptr, NativeMarshal.vector3(position), scale, NativeMarshal.color(tint))
 
   def boundingBox(model: Model): BoundingBox =
     Zone:
       model.requireLive()
-      val out = stackalloc[BoundingBox]()
+      val out = alloc[raw.BoundingBox]()
       RayscalNative.GetModelBoundingBox(out, model.ptr)
-      !out
+      NativeMarshal.readBoundingBox(out)
 
   def meshCount(model: Model): Int =
     model.requireLive()
@@ -99,7 +99,7 @@ object Models:
   def setMaterialColor(model: Model, material: Int, map: Int, color: Color): Unit =
     Zone:
       model.requireLive()
-      require(RayscalNative.ModelSetMaterialColor(model.ptr, material, map, NativeCopies.color(color)), s"Invalid material/map index: $material/$map")
+      require(RayscalNative.ModelSetMaterialColor(model.ptr, material, map, NativeMarshal.color(color)), s"Invalid material/map index: $material/$map")
 
   def setMaterialValue(model: Model, material: Int, map: Int, value: Float): Unit =
     model.requireLive()

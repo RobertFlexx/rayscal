@@ -12,9 +12,9 @@ Scala Native bindings for [raylib](https://www.raylib.com/) 6.0.
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 rayscal wraps raylib's C API in idiomatic Scala, producing a single native binary
-via Scala Native. No JVM at runtime, no GC pauses, no FFI overhead beyond the
-C interop layer. Write game loops and graphics code in Scala, compile to a
-standalone ELF binary, ship it.
+via Scala Native. Friendly values are Scala-owned (safe to store and return);
+struct-by-value FFI goes through pointer-based C shims. Resource handles use
+explicit unload / `with...` scoping.
 
 > ***VERY*** early experimental beta! expect things to **break**, and code to be **unfinished** or **unsafe**. im one guy, and yet to test.
 <br clear="left"/>
@@ -36,7 +36,7 @@ standalone ELF binary, ship it.
 
 Resource-owning types (`Texture2D`, `Shader`, `Sound`, `Music`, `Model`, `Font`,
 `RenderTexture2D`) are managed handles with `with...` helpers for scoped
-lifetimes. No dangling pointers, no double-frees.
+lifetimes. Use-after-unload fails fast; double-unload is a no-op.
 
 ## Quick example
 
@@ -77,10 +77,25 @@ and how to use rayscal from your own sbt project.
 
 ---
 
+## CI / verification
+
+```bash
+./.github/check-ffi-safety.sh   # static checks: no public CStruct aliases / escaping stackalloc
+sbt clean
+sbt core/compile
+sbt ffiSafety/run               # deterministic headless ABI + ownership assertions
+sbt check                       # compile, ffiSafety, abiCheck, link all examples
+```
+
+Headless `ffiSafety` must pass with real assertions (nonzero exit on failure).
+Graphical `abiCheck` is a separate smoke test that opens a tiny window.
+
 ## Examples
 
 | Example | What it shows |
 |---|---|
+| `ffiSafety` | Deterministic headless FFI / ownership assertions |
+| `abiCheck` | Graphical ABI smoke test (tiny window) |
 | `helloWindow` | Minimal window with centered text |
 | `bouncingBall` | Frame-rate-independent movement |
 | `keyboardInput` | Key state queries |
@@ -108,11 +123,12 @@ rayscal/
       Window.scala          # window lifecycle, DPI, fullscreen
       Drawing.scala         # frame(), text, clear, mode2D/3D, shader/blend/scissor
       Colors.scala          # named colors, rgba(), color utilities
+      Types.scala           # Scala-owned Color/Vector/Rectangle/Camera/... values
+      NativeMarshal.scala   # Zone-scoped native marshaling for FFI calls
       Shapes.scala          # 2D primitives (circles, rectangles, triangles, etc.)
       Shapes3D.scala        # 3D primitives (cubes, spheres, cylinders, etc.)
       Input.scala           # Keyboard, Mouse, Gamepads, Touch, Gestures
       Textures.scala        # load, draw, filter, wrap, cubemaps
-      Images.scala          # load, generate, crop, resize, color ops
       Fonts.scala           # custom font loading and rendering
       Audio.scala           # Waves, Sounds, MusicStreams with scoped lifetimes
       Models.scala          # load/generate 3D models, material overrides
@@ -122,22 +138,22 @@ rayscal/
       Camera.scala          # Camera2D/Camera3D construction, update modes
       ScreenSpace.scala     # world-to-screen / screen-to-world conversion
       Rlgl.scala            # rlgl matrix stack, immediate mode, render state
-      Vector.scala          # factory methods + extensions on Vector2/3/4
+      Vector.scala          # factory methods for Vector2/3/4
       Rect.scala            # rectangle utilities
       Time.scala            # frame time, elapsed time
       Utils.scala           # dropped files, paths
-      ManagedResources.scala # managed handle base classes
-      NativeCopies.scala    # safe pointer-based struct passing
-      RaylibAbi.scala       # compile-time struct layout validation
+      ManagedResources.scala # managed handle classes
+      RaylibAbi.scala       # sizeof/field layout validation against raylib C
     src/main/scala/rayscal/raw/
-      Raylib.scala          # @extern declarations matching raylib C API
+      Raylib.scala          # FFI-safe @extern decls (no struct-by-value)
       Rlgl.scala            # @extern declarations for rlgl
       RayscalNative.scala   # @extern declarations for C shim layer
       RaymathNative.scala   # @extern declarations for raymath
-      package.scala         # C struct type aliases (Color, Vector2, etc.)
+      package.scala         # raw CStruct layouts (internal)
     src/main/resources/scala-native/
       rayscal.c             # C shims for ABI-sensitive struct-by-value calls
-  examples/                 # 11 example programs
+  examples/                 # example programs + ffi-safety / abi-check
+  .github/check-ffi-safety.sh
 ```
 
 ---
@@ -146,29 +162,40 @@ rayscal/
 
 rayscal has three layers:
 
-**1. `rayscal.raw` -- FFI declarations**
+**1. `rayscal.*` -- friendly Scala-owned API**
 
-Direct Scala Native `@extern` bindings that map 1:1 to raylib's C functions.
-Names match raylib exactly: `InitWindow`, `BeginDrawing`, `DrawText`, etc.
-Use these when you need something the friendly layer doesn't cover yet.
+Public plain values (`Color`, `Vector2`, `Rectangle`, cameras, rays, …) are
+immutable Scala case classes. They are safe to retain, store in collections,
+and return from methods. They are **not** views into temporary native memory.
 
-**2. `rayscal.raw.RayscalNative` -- C shim layer**
+Resource types (`Image`, `Texture2D`, `Shader`, `Font`, `Model`, `Wave`,
+`Sound`, `Music`, `RenderTexture2D`) are explicit ownership wrappers: load once,
+unload once, and use-after-unload throws. Prefer `with...` helpers for scoped
+lifetimes.
 
-A small C file (`rayscal.c`) plus matching `@extern` declarations. These handle
-raylib functions that return structs by value or take large structs as parameters.
-Scala Native's `@extern` ABI lowering can be unreliable for these calls across
-different toolchains. The shims receive pointers instead, making the interop
-predictable.
+**2. `rayscal.raw.RayscalNative` -- pointer-based C shims**
 
-**3. `rayscal.*` -- friendly wrappers**
+Scala Native cannot reliably pass or return C structs by value across the FFI
+boundary. `rayscal.c` unwraps pointers, calls raylib's by-value C API, and
+writes struct returns into caller-provided output pointers.
 
-Thin Scala objects that handle `Zone` allocation, `CString` conversion, and
-resource lifecycle so you don't have to. They call through to `RayscalNative`
-shims (for struct-heavy calls) or directly to `Raylib` (for scalar returns like
-`GetScreenWidth` or `IsKeyDown`).
+Friendly wrappers marshal Scala values into short-lived Zone allocations only
+for the duration of each native call, then copy results back into Scala-owned
+values before the Zone ends.
 
-The rule of thumb: use the friendly layer. Fall back to `rayscal.raw` when you
-need a function that hasn't been wrapped yet.
+**3. `rayscal.raw` -- advanced / unsafe details**
+
+`raw.Raylib` exposes only FFI-safe declarations (primitives, pointers, C
+strings). Struct-by-value raylib entry points are not declared there. Raw
+`CStruct` layouts live in `rayscal.raw` for marshaling and ABI checks; do not
+treat them as the public value API.
+
+### Ownership rules
+
+- Plain values: freely copyable Scala data.
+- GPU/CPU resources: owned handles with `unload` / `close`; double-unload is a
+  no-op; use after unload fails fast.
+- Borrowed views (`TextureView` into a `RenderTexture2D`) do not own GPU memory.
 
 ## Using assets
 
@@ -209,7 +236,7 @@ Available setters: `setFloat`, `setVector2`, `setVector3`, `setVector4`,
 
 ## Raw access
 
-For functions without a friendly wrapper:
+For scalar raylib functions without a friendly wrapper:
 
 ```scala
 import rayscal.raw.Raylib
@@ -219,8 +246,8 @@ Zone:
   Raylib.SetWindowTitle(toCString("New title"))
 ```
 
-The raw layer is a direct map of the C API. You'll need to handle `Zone`,
-`CString`, and struct pointers yourself.
+For anything that takes or returns a C struct, use `RayscalNative` pointer
+shims (or extend `rayscal.c`) — do not add by-value `@extern` declarations.
 
 ---
 

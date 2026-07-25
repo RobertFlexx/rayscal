@@ -30,10 +30,11 @@ object Fonts:
 
   def draw(font: Font, text: String, position: Vector2, size: Float, spacing: Float, color: Color)(using Zone): Unit =
     font.requireLive()
-    RayscalNative.DrawTextEx(font.ptr, toCString(text), NativeCopies.vector2(position), size, spacing, NativeCopies.color(color))
+    RayscalNative.DrawTextEx(font.ptr, toCString(text), NativeMarshal.vector2(position), size, spacing, NativeMarshal.color(color))
 
-  def measure(font: Font, text: String, size: Float, spacing: Float = 1.0f)(using Zone): Vector2 =
+  def measure(font: Font, text: String, size: Float, spacing: Float = 1.0f): Vector2 =
     font.requireLive()
-    val out = stackalloc[Vector2]()
-    RayscalNative.MeasureTextEx(out, font.ptr, toCString(text), size, spacing)
-    !out
+    Zone:
+      val out = alloc[raw.Vector2]()
+      RayscalNative.MeasureTextEx(out, font.ptr, toCString(text), size, spacing)
+      NativeMarshal.readVector2(out)

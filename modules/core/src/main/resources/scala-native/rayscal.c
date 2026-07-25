@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include "raymath.h"
+#include "rlgl.h"
 #include <stdlib.h>
 
 int rayscal_raylib_version_major(void) { return RAYLIB_VERSION_MAJOR; }
@@ -97,6 +98,10 @@ void rayscal_SetShaderValue(const Shader *shader, int locIndex, const void *valu
     SetShaderValue(*shader, locIndex, value, uniformType);
 }
 
+void rayscal_SetShaderValueV(const Shader *shader, int locIndex, const void *value, int uniformType, int count) {
+    SetShaderValueV(*shader, locIndex, value, uniformType, count);
+}
+
 void rayscal_SetShaderValueMatrix(const Shader *shader, int locIndex, const Matrix *matrix) {
     SetShaderValueMatrix(*shader, locIndex, *matrix);
 }
@@ -153,6 +158,14 @@ void rayscal_ColorToHSV(Vector3 *out, const Color *color) {
     *out = ColorToHSV(*color);
 }
 
+void rayscal_ColorNormalize(Vector4 *out, const Color *color) {
+    *out = ColorNormalize(*color);
+}
+
+void rayscal_ColorFromNormalized(Color *out, const Vector4 *normalized) {
+    *out = ColorFromNormalized(*normalized);
+}
+
 int rayscal_ColorToInt(const Color *color) {
     return ColorToInt(*color);
 }
@@ -175,6 +188,10 @@ void rayscal_DrawLine(int x1, int y1, int x2, int y2, const Color *color) {
 
 void rayscal_DrawPixel(int x, int y, const Color *color) {
     DrawPixel(x, y, *color);
+}
+
+void rayscal_DrawPixelV(const Vector2 *position, const Color *color) {
+    DrawPixelV(*position, *color);
 }
 
 void rayscal_DrawLineV(const Vector2 *start, const Vector2 *end, const Color *color) {
@@ -277,6 +294,10 @@ void rayscal_UnloadImage(const Image *image) {
     UnloadImage(*image);
 }
 
+bool rayscal_ExportImage(const Image *image, const char *fileName) {
+    return ExportImage(*image, fileName);
+}
+
 void rayscal_GenImageColor(Image *out, int width, int height, const Color *color) {
     *out = GenImageColor(width, height, *color);
 }
@@ -351,6 +372,10 @@ void rayscal_DrawTextureEx(const Texture2D *texture, const Vector2 *position, fl
 
 void rayscal_DrawTextureRec(const Texture2D *texture, const Rectangle *source, const Vector2 *position, const Color *tint) {
     DrawTextureRec(*texture, *source, *position, *tint);
+}
+
+void rayscal_GenTextureMipmaps(Texture2D *texture) {
+    GenTextureMipmaps(texture);
 }
 
 void rayscal_DrawLine3D(const Vector3 *start, const Vector3 *end, const Color *color) {
@@ -683,6 +708,7 @@ void rayscal_UnloadDroppedFiles(FilePathList *files) {
 
 void rayscal_GetMouseDelta(Vector2 *out) { *out = GetMouseDelta(); }
 void rayscal_GetMouseWheelMoveV(Vector2 *out) { *out = GetMouseWheelMoveV(); }
+void rayscal_GetMousePosition(Vector2 *out) { *out = GetMousePosition(); }
 void rayscal_GetTouchPosition(Vector2 *out, int index) { *out = GetTouchPosition(index); }
 void rayscal_GetGestureDragVector(Vector2 *out) { *out = GetGestureDragVector(); }
 void rayscal_GetGesturePinchVector(Vector2 *out) { *out = GetGesturePinchVector(); }
@@ -770,3 +796,58 @@ void rayscal_QuaternionFromEuler(Quaternion *out, float pitch, float yaw, float 
 void rayscal_QuaternionToEuler(Vector3 *out, const Quaternion *value) { *out = QuaternionToEuler(*value); }
 void rayscal_QuaternionFromAxisAngle(Quaternion *out, const Vector3 *axis, float angle) { *out = QuaternionFromAxisAngle(*axis, angle); }
 void rayscal_QuaternionToMatrix(Matrix *out, const Quaternion *value) { *out = QuaternionToMatrix(*value); }
+
+/* Deterministic ABI / marshaling test helpers (no window / no input). */
+void rayscal_test_ReturnVector2(Vector2 *out) {
+    out->x = 1.5f;
+    out->y = -2.25f;
+}
+
+void rayscal_test_ReturnColor(Color *out) {
+    out->r = 10;
+    out->g = 20;
+    out->b = 30;
+    out->a = 40;
+}
+
+bool rayscal_test_AcceptRectangle(const Rectangle *rec) {
+    return rec->x == 1.0f && rec->y == 2.0f && rec->width == 3.0f && rec->height == 4.0f;
+}
+
+bool rayscal_test_AcceptLineColor(const Vector2 *start, const Vector2 *end, const Color *color) {
+    return start->x == 0.0f && start->y == 0.0f &&
+           end->x == 100.0f && end->y == 50.0f &&
+           color->r == 230 && color->g == 41 && color->b == 55 && color->a == 255;
+}
+
+bool rayscal_test_AcceptCamera2D(const Camera2D *camera) {
+    return camera->offset.x == 400.0f && camera->offset.y == 300.0f &&
+           camera->target.x == 10.0f && camera->target.y == 20.0f &&
+           camera->rotation == 0.0f && camera->zoom == 2.0f;
+}
+
+bool rayscal_test_AcceptCamera3D(const Camera3D *camera) {
+    return camera->position.x == 1.0f && camera->position.y == 2.0f && camera->position.z == 3.0f &&
+           camera->target.x == 0.0f && camera->target.y == 0.0f && camera->target.z == 0.0f &&
+           camera->up.x == 0.0f && camera->up.y == 1.0f && camera->up.z == 0.0f &&
+           camera->fovy == 45.0f && camera->projection == 0;
+}
+
+void rayscal_test_ReturnTextureMeta(Texture2D *out) {
+    out->id = 42u;
+    out->width = 64;
+    out->height = 32;
+    out->mipmaps = 1;
+    out->format = 7;
+}
+
+void rayscal_test_ChurnStack(void) {
+    volatile char scratch[4096];
+    for (int i = 0; i < 4096; i++) {
+        scratch[i] = (char)(i & 0xff);
+    }
+}
+
+void rayscal_rlSetUniformMatrix(int locIndex, const Matrix *mat) {
+    rlSetUniformMatrix(locIndex, *mat);
+}

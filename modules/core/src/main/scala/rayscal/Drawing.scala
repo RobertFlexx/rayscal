@@ -1,6 +1,6 @@
 package rayscal
 
-import rayscal.raw.{Color, Raylib, RayscalNative, Vector2}
+import rayscal.raw.{Raylib, RayscalNative}
 import scala.scalanative.unsafe.*
 
 object Drawing:
@@ -12,13 +12,13 @@ object Drawing:
 
   def mode2D(camera: Camera2D)(body: Zone ?=> Unit): Unit =
     Zone:
-      RayscalNative.BeginMode2D(NativeCopies.camera2D(camera))
+      RayscalNative.BeginMode2D(NativeMarshal.camera2D(camera))
       try body
       finally Raylib.EndMode2D()
 
   def mode3D(camera: Camera3D)(body: Zone ?=> Unit): Unit =
     Zone:
-      RayscalNative.BeginMode3D(NativeCopies.camera3D(camera))
+      RayscalNative.BeginMode3D(NativeMarshal.camera3D(camera))
       try body
       finally Raylib.EndMode3D()
 
@@ -50,10 +50,10 @@ object Drawing:
 
   def clear(color: Color): Unit =
     Zone:
-      RayscalNative.ClearBackground(NativeCopies.color(color))
+      RayscalNative.ClearBackground(NativeMarshal.color(color))
 
   def text(value: String, x: Int, y: Int, size: Int, color: Color)(using Zone): Unit =
-    RayscalNative.DrawText(toCString(value), x, y, size, NativeCopies.color(color))
+    RayscalNative.DrawText(toCString(value), x, y, size, NativeMarshal.color(color))
 
   def text(font: Font, value: String, position: Vector2, size: Float, spacing: Float, color: Color)(using Zone): Unit =
     Fonts.draw(font, value, position, size, spacing, color)

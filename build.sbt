@@ -64,8 +64,13 @@ ThisBuild / description := "Scala Native bindings for raylib"
 ThisBuild / versionScheme := Some("early-semver")
 
 addCommandAlias(
+  "checkFfiSafety",
+  ";ffiSafety/run"
+)
+
+addCommandAlias(
   "check",
-  ";core/compile;abiCheck/run;abiCheck/nativeLink;helloWindow/nativeLink;bouncingBall/nativeLink;keyboardInput/nativeLink;rlglTriangle/nativeLink;shapesGallery/nativeLink;textureChecker/nativeLink;basic3d/nativeLink;camera2d/nativeLink;renderTexture/nativeLink;starRescue/nativeLink"
+  ";core/compile;ffiSafety/run;abiCheck/run;abiCheck/nativeLink;ffiSafety/nativeLink;helloWindow/nativeLink;bouncingBall/nativeLink;keyboardInput/nativeLink;rlglTriangle/nativeLink;shapesGallery/nativeLink;textureChecker/nativeLink;basic3d/nativeLink;camera2d/nativeLink;renderTexture/nativeLink;starRescue/nativeLink"
 )
 
 lazy val commonSettings = Seq(
@@ -84,7 +89,7 @@ lazy val commonSettings = Seq(
 
 lazy val root = project
   .in(file("."))
-  .aggregate(core, abiCheck, helloWindow, bouncingBall, keyboardInput, rlglTriangle, shapesGallery, textureChecker, basic3d, camera2d, renderTexture, starRescue)
+  .aggregate(core, ffiSafety, abiCheck, helloWindow, bouncingBall, keyboardInput, rlglTriangle, shapesGallery, textureChecker, basic3d, camera2d, renderTexture, starRescue)
   .settings(
     name := "rayscal-root",
     publish / skip := true
@@ -105,6 +110,16 @@ lazy val helloWindow = project
   .settings(commonSettings)
   .settings(
     name := "rayscal-hello-window",
+    publish / skip := true
+  )
+
+lazy val ffiSafety = project
+  .in(file("examples/ffi-safety"))
+  .enablePlugins(ScalaNativePlugin)
+  .dependsOn(core)
+  .settings(commonSettings)
+  .settings(
+    name := "rayscal-ffi-safety",
     publish / skip := true
   )
 

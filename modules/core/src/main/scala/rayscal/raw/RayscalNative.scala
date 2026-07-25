@@ -118,6 +118,9 @@ object RayscalNative:
   @name("rayscal_SetShaderValue")
   def SetShaderValue(shader: Ptr[Shader], locIndex: CInt, value: Ptr[Byte], uniformType: CInt): Unit = extern
 
+  @name("rayscal_SetShaderValueV")
+  def SetShaderValueV(shader: Ptr[Shader], locIndex: CInt, value: Ptr[Byte], uniformType: CInt, count: CInt): Unit = extern
+
   @name("rayscal_SetShaderValueMatrix")
   def SetShaderValueMatrix(shader: Ptr[Shader], locIndex: CInt, matrix: Ptr[Matrix]): Unit = extern
 
@@ -160,6 +163,12 @@ object RayscalNative:
   @name("rayscal_ColorToHSV")
   def ColorToHSV(out: Ptr[Vector3], color: Ptr[Color]): Unit = extern
 
+  @name("rayscal_ColorNormalize")
+  def ColorNormalize(out: Ptr[Vector4], color: Ptr[Color]): Unit = extern
+
+  @name("rayscal_ColorFromNormalized")
+  def ColorFromNormalized(out: Ptr[Color], normalized: Ptr[Vector4]): Unit = extern
+
   @name("rayscal_ColorToInt")
   def ColorToInt(color: Ptr[Color]): CInt = extern
 
@@ -177,6 +186,9 @@ object RayscalNative:
 
   @name("rayscal_DrawPixel")
   def DrawPixel(x: CInt, y: CInt, color: Ptr[Color]): Unit = extern
+
+  @name("rayscal_DrawPixelV")
+  def DrawPixelV(position: Ptr[Vector2], color: Ptr[Color]): Unit = extern
 
   @name("rayscal_DrawLineV")
   def DrawLineV(start: Ptr[Vector2], end: Ptr[Vector2], color: Ptr[Color]): Unit = extern
@@ -253,6 +265,9 @@ object RayscalNative:
   @name("rayscal_UnloadImage")
   def UnloadImage(image: Ptr[Image]): Unit = extern
 
+  @name("rayscal_ExportImage")
+  def ExportImage(image: Ptr[Image], fileName: CString): CBool = extern
+
   @name("rayscal_GenImageColor")
   def GenImageColor(out: Ptr[Image], width: CInt, height: CInt, color: Ptr[Color]): Unit = extern
 
@@ -297,6 +312,9 @@ object RayscalNative:
 
   @name("rayscal_SetTextureWrap")
   def SetTextureWrap(texture: Ptr[Texture2D], wrap: CInt): Unit = extern
+
+  @name("rayscal_GenTextureMipmaps")
+  def GenTextureMipmaps(texture: Ptr[Texture2D]): Unit = extern
 
   @name("rayscal_DrawTexture")
   def DrawTexture(texture: Ptr[Texture2D], x: CInt, y: CInt, tint: Ptr[Color]): Unit = extern
@@ -601,6 +619,9 @@ object RayscalNative:
   @name("rayscal_GetMouseWheelMoveV")
   def GetMouseWheelMoveV(out: Ptr[Vector2]): Unit = extern
 
+  @name("rayscal_GetMousePosition")
+  def GetMousePosition(out: Ptr[Vector2]): Unit = extern
+
   @name("rayscal_GetTouchPosition")
   def GetTouchPosition(out: Ptr[Vector2], index: CInt): Unit = extern
 
@@ -624,3 +645,31 @@ object RayscalNative:
 
   @name("rayscal_GetCameraMatrix2D")
   def GetCameraMatrix2D(out: Ptr[Matrix], camera: Ptr[Camera2D]): Unit = extern
+
+  @name("rayscal_rlSetUniformMatrix")
+  def RlSetUniformMatrix(locIndex: CInt, mat: Ptr[Matrix]): Unit = extern
+
+
+  @name("rayscal_test_ReturnVector2")
+  def TestReturnVector2(out: Ptr[Vector2]): Unit = extern
+
+  @name("rayscal_test_ReturnColor")
+  def TestReturnColor(out: Ptr[Color]): Unit = extern
+
+  @name("rayscal_test_AcceptRectangle")
+  def TestAcceptRectangle(rec: Ptr[Rectangle]): CBool = extern
+
+  @name("rayscal_test_AcceptLineColor")
+  def TestAcceptLineColor(start: Ptr[Vector2], end: Ptr[Vector2], color: Ptr[Color]): CBool = extern
+
+  @name("rayscal_test_AcceptCamera2D")
+  def TestAcceptCamera2D(camera: Ptr[Camera2D]): CBool = extern
+
+  @name("rayscal_test_AcceptCamera3D")
+  def TestAcceptCamera3D(camera: Ptr[Camera3D]): CBool = extern
+
+  @name("rayscal_test_ReturnTextureMeta")
+  def TestReturnTextureMeta(out: Ptr[Texture2D]): Unit = extern
+
+  @name("rayscal_test_ChurnStack")
+  def TestChurnStack(): Unit = extern

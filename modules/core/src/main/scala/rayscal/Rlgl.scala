@@ -1,6 +1,6 @@
 package rayscal
 
-import rayscal.raw.{Rlgl as RawRlgl}
+import rayscal.raw.{RayscalNative, Rlgl as RawRlgl}
 import scala.scalanative.unsafe.*
 import scala.scalanative.unsigned.*
 
@@ -32,13 +32,17 @@ object Rlgl:
   def matrixMode(mode: MatrixMode): Unit =
     RawRlgl.rlMatrixMode(mode.value)
 
+  /** Push/pop the rlgl matrix stack around `body`.
+    *
+    * Important: do not call [[matrixMode]] between push and pop. rlgl routes
+    * MODELVIEW pushes through an internal transform matrix; changing the matrix
+    * mode before pop restores into the wrong matrix and leaves a dirty
+    * transform that compounds across frames (visible as flicker / jumping).
+    */
   def pushMatrix(body: => Unit): Unit =
-    RawRlgl.rlMatrixMode(MatrixMode.ModelView.value)
     RawRlgl.rlPushMatrix()
     try body
-    finally
-      RawRlgl.rlMatrixMode(MatrixMode.ModelView.value)
-      RawRlgl.rlPopMatrix()
+    finally RawRlgl.rlPopMatrix()
 
   def loadIdentity(): Unit =
     RawRlgl.rlLoadIdentity()
@@ -210,6 +214,16 @@ object Rlgl:
 
   def isStereoRenderEnabled: Boolean =
     RawRlgl.rlIsStereoRenderEnabled()
+
+  /** Force the active rlgl render batch to draw now.
+    * Useful when mixing immediate-mode rlgl draws with higher-level Drawing calls.
+    */
+  def drawRenderBatchActive(): Unit =
+    RawRlgl.rlDrawRenderBatchActive()
+
+  def setUniformMatrix(location: Int, matrix: Matrix): Unit =
+    Zone:
+      RayscalNative.RlSetUniformMatrix(location, NativeMarshal.matrix(matrix))
 
   def loadVertexArray(): Int =
     RawRlgl.rlLoadVertexArray().toInt

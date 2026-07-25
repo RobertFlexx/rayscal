@@ -41,14 +41,10 @@ object Window:
     Raylib.SetWindowOpacity(opacity)
 
   def position: Vector2 =
-    val out = stackalloc[Vector2]()
-    RayscalNative.GetWindowPosition(out)
-    !out
+    NativeMarshal.readVector2(RayscalNative.GetWindowPosition(_))
 
   def dpiScale: Vector2 =
-    val out = stackalloc[Vector2]()
-    RayscalNative.GetWindowScaleDPI(out)
-    !out
+    NativeMarshal.readVector2(RayscalNative.GetWindowScaleDPI(_))
 
   def toggleFullscreen(): Unit =
     Raylib.ToggleFullscreen()
@@ -105,9 +101,7 @@ object Monitors:
     Raylib.GetCurrentMonitor()
 
   def position(monitor: Int): Vector2 =
-    val out = stackalloc[Vector2]()
-    RayscalNative.GetMonitorPosition(out, monitor)
-    !out
+    NativeMarshal.readVector2(out => RayscalNative.GetMonitorPosition(out, monitor))
 
   def width(monitor: Int): Int =
     Raylib.GetMonitorWidth(monitor)

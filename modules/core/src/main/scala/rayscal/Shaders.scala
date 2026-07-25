@@ -76,25 +76,25 @@ object Shaders:
   def setVector2(shader: Shader, location: Int, value: Vector2): Unit =
     Zone:
       val data = stackalloc[CFloat](2)
-      data(0) = value._1
-      data(1) = value._2
+      data(0) = value.x
+      data(1) = value.y
       setValue(shader, location, data, UniformType.Vec2)
 
   def setVector3(shader: Shader, location: Int, value: Vector3): Unit =
     Zone:
       val data = stackalloc[CFloat](3)
-      data(0) = value._1
-      data(1) = value._2
-      data(2) = value._3
+      data(0) = value.x
+      data(1) = value.y
+      data(2) = value.z
       setValue(shader, location, data, UniformType.Vec3)
 
   def setVector4(shader: Shader, location: Int, value: Vector4): Unit =
     Zone:
       val data = stackalloc[CFloat](4)
-      data(0) = value._1
-      data(1) = value._2
-      data(2) = value._3
-      data(3) = value._4
+      data(0) = value.x
+      data(1) = value.y
+      data(2) = value.z
+      data(3) = value.w
       setValue(shader, location, data, UniformType.Vec4)
 
   def setInt(shader: Shader, location: Int, value: Int): Unit =
@@ -106,7 +106,7 @@ object Shaders:
   def setMatrix(shader: Shader, location: Int, matrix: Matrix): Unit =
     Zone:
       shader.requireLive()
-      RayscalNative.SetShaderValueMatrix(shader.ptr, location, NativeCopies.matrix(matrix))
+      RayscalNative.SetShaderValueMatrix(shader.ptr, location, NativeMarshal.matrix(matrix))
 
   def setInts(shader: Shader, location: Int, x: Int, y: Int): Unit =
     setIntVector(shader, location, UniformType.IVec2, x, y)

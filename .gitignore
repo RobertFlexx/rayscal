@@ -44,3 +44,6 @@ desktop.ini
 
 # Native link output (large binaries)
 *.out
+
+# Local developer helpers (not part of the published tree)
+scripts/

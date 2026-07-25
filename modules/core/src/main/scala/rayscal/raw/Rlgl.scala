@@ -77,6 +77,7 @@ object Rlgl:
   def rlGetFramebufferWidth(): CInt = extern
   def rlGetFramebufferHeight(): CInt = extern
   def rlIsStereoRenderEnabled(): CBool = extern
+  def rlDrawRenderBatchActive(): Unit = extern
 
   def rlLoadVertexArray(): CUnsignedInt = extern
   def rlLoadVertexBuffer(buffer: Ptr[Byte], size: CInt, dynamic: CBool): CUnsignedInt = extern
@@ -114,7 +115,7 @@ object Rlgl:
   def rlGetLocationUniform(shaderId: CUnsignedInt, uniformName: CString): CInt = extern
   def rlGetLocationAttrib(shaderId: CUnsignedInt, attribName: CString): CInt = extern
   def rlSetUniform(locIndex: CInt, value: Ptr[Byte], uniformType: CInt, count: CInt): Unit = extern
-  def rlSetUniformMatrix(locIndex: CInt, mat: Matrix): Unit = extern
+  // rlSetUniformMatrix takes Matrix by value — use RayscalNative / a C shim; not declared here.
   def rlSetUniformMatrices(locIndex: CInt, mat: Ptr[Matrix], count: CInt): Unit = extern
   def rlSetUniformSampler(locIndex: CInt, textureId: CUnsignedInt): Unit = extern
   def rlSetShader(id: CUnsignedInt, locs: Ptr[CInt]): Unit = extern

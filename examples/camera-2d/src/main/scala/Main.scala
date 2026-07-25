@@ -32,17 +32,17 @@ import scala.scalanative.unsafe.Zone
         zoom = math.max(0.25f, math.min(4.0f, zoom * zoomFactor)).toFloat
         val cameraAfterZoom = Cameras.camera2D(offset, Vector.vector2(targetX, targetY), 0.0f, zoom)
         val worldAfterZoom = ScreenSpace.screenToWorld2D(mouse, cameraAfterZoom)
-        targetX += worldBeforeZoom._1 - worldAfterZoom._1
-        targetY += worldBeforeZoom._2 - worldAfterZoom._2
+        targetX += worldBeforeZoom.x - worldAfterZoom.x
+        targetY += worldBeforeZoom.y - worldAfterZoom.y
 
         val camera = Cameras.camera2D(offset, Vector.vector2(targetX, targetY), 0.0f, zoom)
         val worldMouse = ScreenSpace.screenToWorld2D(mouse, camera)
         val topLeft = ScreenSpace.screenToWorld2D(Vector.vector2(0.0f, 0.0f), camera)
         val bottomRight = ScreenSpace.screenToWorld2D(Vector.vector2(Window.screenWidth.toFloat, Window.screenHeight.toFloat), camera)
-        val firstGridX = math.floor(math.min(topLeft._1, bottomRight._1) / 100.0f).toInt
-        val lastGridX = math.ceil(math.max(topLeft._1, bottomRight._1) / 100.0f).toInt
-        val firstGridY = math.floor(math.min(topLeft._2, bottomRight._2) / 100.0f).toInt
-        val lastGridY = math.ceil(math.max(topLeft._2, bottomRight._2) / 100.0f).toInt
+        val firstGridX = math.floor(math.min(topLeft.x, bottomRight.x) / 100.0f).toInt
+        val lastGridX = math.ceil(math.max(topLeft.x, bottomRight.x) / 100.0f).toInt
+        val firstGridY = math.floor(math.min(topLeft.y, bottomRight.y) / 100.0f).toInt
+        val lastGridY = math.ceil(math.max(topLeft.y, bottomRight.y) / 100.0f).toInt
 
         Drawing.frame:
           Drawing.clear(Colors.RAYWHITE)
@@ -57,8 +57,8 @@ import scala.scalanative.unsafe.Zone
             Shapes.rectangle(-120, -90, 240, 180, Colors.SKYBLUE)
             Shapes.rectangleLines(-120, -90, 240, 180, Colors.DARKBLUE)
             Shapes.circle(worldMouse, 10.0f, Colors.BLACK)
-            Shapes.line(Vector.vector2(worldMouse._1 - 18.0f, worldMouse._2), Vector.vector2(worldMouse._1 + 18.0f, worldMouse._2), Colors.BLACK)
-            Shapes.line(Vector.vector2(worldMouse._1, worldMouse._2 - 18.0f), Vector.vector2(worldMouse._1, worldMouse._2 + 18.0f), Colors.BLACK)
+            Shapes.line(Vector.vector2(worldMouse.x - 18.0f, worldMouse.y), Vector.vector2(worldMouse.x + 18.0f, worldMouse.y), Colors.BLACK)
+            Shapes.line(Vector.vector2(worldMouse.x, worldMouse.y - 18.0f), Vector.vector2(worldMouse.x, worldMouse.y + 18.0f), Colors.BLACK)
 
           Shapes.rectangle(16, 16, 620, 76, Colors.WHITE)
           Shapes.rectangleLines(16, 16, 620, 76, Colors.DARKGRAY)

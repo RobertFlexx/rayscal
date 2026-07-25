@@ -35,25 +35,25 @@ object Images:
   def checked(width: Int, height: Int, checksX: Int, checksY: Int, color1: Color, color2: Color): Image =
     Zone:
       val image = allocate()
-      RayscalNative.GenImageChecked(image.ptr, width, height, checksX, checksY, NativeCopies.color(color1), NativeCopies.color(color2))
+      RayscalNative.GenImageChecked(image.ptr, width, height, checksX, checksY, NativeMarshal.color(color1), NativeMarshal.color(color2))
       image
 
   def solid(width: Int, height: Int, color: Color): Image =
     Zone:
       val image = allocate()
-      RayscalNative.GenImageColor(image.ptr, width, height, NativeCopies.color(color))
+      RayscalNative.GenImageColor(image.ptr, width, height, NativeMarshal.color(color))
       image
 
   def gradientLinear(width: Int, height: Int, direction: Int, start: Color, end: Color): Image =
     Zone:
       val image = allocate()
-      RayscalNative.GenImageGradientLinear(image.ptr, width, height, direction, NativeCopies.color(start), NativeCopies.color(end))
+      RayscalNative.GenImageGradientLinear(image.ptr, width, height, direction, NativeMarshal.color(start), NativeMarshal.color(end))
       image
 
   def gradientRadial(width: Int, height: Int, density: Float, inner: Color, outer: Color): Image =
     Zone:
       val image = allocate()
-      RayscalNative.GenImageGradientRadial(image.ptr, width, height, density, NativeCopies.color(inner), NativeCopies.color(outer))
+      RayscalNative.GenImageGradientRadial(image.ptr, width, height, density, NativeMarshal.color(inner), NativeMarshal.color(outer))
       image
 
   def perlinNoise(width: Int, height: Int, offsetX: Int, offsetY: Int, scale: Float): Image =
@@ -78,7 +78,7 @@ object Images:
   def crop(image: Image, crop: Rectangle): Unit =
     Zone:
       image.requireLive()
-      RayscalNative.ImageCrop(image.ptr, NativeCopies.rectangle(crop))
+      RayscalNative.ImageCrop(image.ptr, NativeMarshal.rectangle(crop))
 
   def resize(image: Image, width: Int, height: Int): Unit =
     image.requireLive()
@@ -107,7 +107,7 @@ object Images:
   def tint(image: Image, color: Color): Unit =
     Zone:
       image.requireLive()
-      RayscalNative.ImageColorTint(image.ptr, NativeCopies.color(color))
+      RayscalNative.ImageColorTint(image.ptr, NativeMarshal.color(color))
 
   def invert(image: Image): Unit =
     image.requireLive()
@@ -128,6 +128,11 @@ object Images:
   def isValid(image: Image): Boolean =
     image.requireLive()
     RayscalNative.IsImageValid(image.ptr)
+
+  def exportTo(image: Image, fileName: String): Boolean =
+    Zone:
+      image.requireLive()
+      RayscalNative.ExportImage(image.ptr, toCString(fileName))
 
   def unload(image: Image): Unit =
     if !image.disposed then
@@ -180,7 +185,7 @@ object Textures:
   def updateRec(texture: Texture2D, rec: Rectangle, pixels: Ptr[Byte]): Unit =
     Zone:
       texture.requireLive()
-      RayscalNative.UpdateTextureRec(texture.ptr, NativeCopies.rectangle(rec), pixels)
+      RayscalNative.UpdateTextureRec(texture.ptr, NativeMarshal.rectangle(rec), pixels)
 
   def generateMipmaps(texture: Texture2D): Unit =
     texture.requireLive()
@@ -207,56 +212,56 @@ object Textures:
   def draw(texture: Texture2D, x: Int, y: Int, tint: Color): Unit =
     Zone:
       texture.requireLive()
-      RayscalNative.DrawTexture(texture.ptr, x, y, NativeCopies.color(tint))
+      RayscalNative.DrawTexture(texture.ptr, x, y, NativeMarshal.color(tint))
 
   def draw(texture: TextureView, x: Int, y: Int, tint: Color): Unit =
     Zone:
-      RayscalNative.DrawTexture(texture.native, x, y, NativeCopies.color(tint))
+      RayscalNative.DrawTexture(texture.native, x, y, NativeMarshal.color(tint))
 
   def draw(texture: Texture2D, position: Vector2, tint: Color): Unit =
     Zone:
       texture.requireLive()
-      RayscalNative.DrawTextureV(texture.ptr, NativeCopies.vector2(position), NativeCopies.color(tint))
+      RayscalNative.DrawTextureV(texture.ptr, NativeMarshal.vector2(position), NativeMarshal.color(tint))
 
   def draw(texture: TextureView, position: Vector2, tint: Color): Unit =
     Zone:
-      RayscalNative.DrawTextureV(texture.native, NativeCopies.vector2(position), NativeCopies.color(tint))
+      RayscalNative.DrawTextureV(texture.native, NativeMarshal.vector2(position), NativeMarshal.color(tint))
 
   def draw(texture: Texture2D, position: Vector2, rotation: Float, scale: Float, tint: Color): Unit =
     Zone:
       texture.requireLive()
-      RayscalNative.DrawTextureEx(texture.ptr, NativeCopies.vector2(position), rotation, scale, NativeCopies.color(tint))
+      RayscalNative.DrawTextureEx(texture.ptr, NativeMarshal.vector2(position), rotation, scale, NativeMarshal.color(tint))
 
   def drawRec(texture: Texture2D, source: Rectangle, position: Vector2, tint: Color): Unit =
     Zone:
       texture.requireLive()
-      RayscalNative.DrawTextureRec(texture.ptr, NativeCopies.rectangle(source), NativeCopies.vector2(position), NativeCopies.color(tint))
+      RayscalNative.DrawTextureRec(texture.ptr, NativeMarshal.rectangle(source), NativeMarshal.vector2(position), NativeMarshal.color(tint))
 
   def drawRec(texture: TextureView, source: Rectangle, position: Vector2, tint: Color): Unit =
     Zone:
-      RayscalNative.DrawTextureRec(texture.native, NativeCopies.rectangle(source), NativeCopies.vector2(position), NativeCopies.color(tint))
+      RayscalNative.DrawTextureRec(texture.native, NativeMarshal.rectangle(source), NativeMarshal.vector2(position), NativeMarshal.color(tint))
 
   def drawPro(texture: Texture2D, source: Rectangle, dest: Rectangle, origin: Vector2, rotation: Float, tint: Color): Unit =
     Zone:
       texture.requireLive()
       RayscalNative.DrawTexturePro(
         texture.ptr,
-        NativeCopies.rectangle(source),
-        NativeCopies.rectangle(dest),
-        NativeCopies.vector2(origin),
+        NativeMarshal.rectangle(source),
+        NativeMarshal.rectangle(dest),
+        NativeMarshal.vector2(origin),
         rotation,
-        NativeCopies.color(tint)
+        NativeMarshal.color(tint)
       )
 
   def drawPro(texture: TextureView, source: Rectangle, dest: Rectangle, origin: Vector2, rotation: Float, tint: Color): Unit =
     Zone:
       RayscalNative.DrawTexturePro(
         texture.native,
-        NativeCopies.rectangle(source),
-        NativeCopies.rectangle(dest),
-        NativeCopies.vector2(origin),
+        NativeMarshal.rectangle(source),
+        NativeMarshal.rectangle(dest),
+        NativeMarshal.vector2(origin),
         rotation,
-        NativeCopies.color(tint)
+        NativeMarshal.color(tint)
       )
 
   def id(texture: Texture2D): Int =

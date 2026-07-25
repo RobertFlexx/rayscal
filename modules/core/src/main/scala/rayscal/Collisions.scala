@@ -5,73 +5,75 @@ import scala.scalanative.unsafe.*
 
 object Bounds:
   def box(minimum: Vector3, maximum: Vector3): BoundingBox =
-    Zone:
-      val box = stackalloc[BoundingBox]()
-      (!box)._1 = minimum._1
-      (!box)._2 = minimum._2
-      (!box)._3 = minimum._3
-      (!box)._4 = maximum._1
-      (!box)._5 = maximum._2
-      (!box)._6 = maximum._3
-      !box
+    BoundingBox(minimum, maximum)
 
 object Collisions:
   def rectangles(a: Rectangle, b: Rectangle): Boolean =
-    Zone(RayscalNative.CheckCollisionRecs(NativeCopies.rectangle(a), NativeCopies.rectangle(b)))
+    Zone(RayscalNative.CheckCollisionRecs(NativeMarshal.rectangle(a), NativeMarshal.rectangle(b)))
 
   def circles(center1: Vector2, radius1: Float, center2: Vector2, radius2: Float): Boolean =
-    Zone(RayscalNative.CheckCollisionCircles(NativeCopies.vector2(center1), radius1, NativeCopies.vector2(center2), radius2))
+    Zone(RayscalNative.CheckCollisionCircles(NativeMarshal.vector2(center1), radius1, NativeMarshal.vector2(center2), radius2))
 
   def circleRectangle(center: Vector2, radius: Float, rectangle: Rectangle): Boolean =
-    Zone(RayscalNative.CheckCollisionCircleRec(NativeCopies.vector2(center), radius, NativeCopies.rectangle(rectangle)))
+    Zone(RayscalNative.CheckCollisionCircleRec(NativeMarshal.vector2(center), radius, NativeMarshal.rectangle(rectangle)))
 
   def pointRectangle(point: Vector2, rectangle: Rectangle): Boolean =
-    Zone(RayscalNative.CheckCollisionPointRec(NativeCopies.vector2(point), NativeCopies.rectangle(rectangle)))
+    Zone(RayscalNative.CheckCollisionPointRec(NativeMarshal.vector2(point), NativeMarshal.rectangle(rectangle)))
 
   def pointCircle(point: Vector2, center: Vector2, radius: Float): Boolean =
-    Zone(RayscalNative.CheckCollisionPointCircle(NativeCopies.vector2(point), NativeCopies.vector2(center), radius))
+    Zone(RayscalNative.CheckCollisionPointCircle(NativeMarshal.vector2(point), NativeMarshal.vector2(center), radius))
 
   def pointTriangle(point: Vector2, p1: Vector2, p2: Vector2, p3: Vector2): Boolean =
-    Zone(RayscalNative.CheckCollisionPointTriangle(NativeCopies.vector2(point), NativeCopies.vector2(p1), NativeCopies.vector2(p2), NativeCopies.vector2(p3)))
+    Zone(RayscalNative.CheckCollisionPointTriangle(NativeMarshal.vector2(point), NativeMarshal.vector2(p1), NativeMarshal.vector2(p2), NativeMarshal.vector2(p3)))
 
-  def collisionRectangle(a: Rectangle, b: Rectangle)(using Zone): Rectangle =
-    val out = stackalloc[Rectangle]()
-    RayscalNative.GetCollisionRec(out, NativeCopies.rectangle(a), NativeCopies.rectangle(b))
-    !out
+  def collisionRectangle(a: Rectangle, b: Rectangle): Rectangle =
+    Zone:
+      val out = alloc[raw.Rectangle]()
+      RayscalNative.GetCollisionRec(out, NativeMarshal.rectangle(a), NativeMarshal.rectangle(b))
+      NativeMarshal.readRectangle(out)
 
   def spheres(center1: Vector3, radius1: Float, center2: Vector3, radius2: Float): Boolean =
-    Zone(RayscalNative.CheckCollisionSpheres(NativeCopies.vector3(center1), radius1, NativeCopies.vector3(center2), radius2))
+    Zone(RayscalNative.CheckCollisionSpheres(NativeMarshal.vector3(center1), radius1, NativeMarshal.vector3(center2), radius2))
 
   def boxes(a: BoundingBox, b: BoundingBox): Boolean =
-    Zone(RayscalNative.CheckCollisionBoxes(NativeCopies.boundingBox(a), NativeCopies.boundingBox(b)))
+    Zone(RayscalNative.CheckCollisionBoxes(NativeMarshal.boundingBox(a), NativeMarshal.boundingBox(b)))
 
   def boxSphere(box: BoundingBox, center: Vector3, radius: Float): Boolean =
-    Zone(RayscalNative.CheckCollisionBoxSphere(NativeCopies.boundingBox(box), NativeCopies.vector3(center), radius))
+    Zone(RayscalNative.CheckCollisionBoxSphere(NativeMarshal.boundingBox(box), NativeMarshal.vector3(center), radius))
 
 object RayHits:
-  def sphere(ray: Ray, center: Vector3, radius: Float)(using Zone): RayCollision =
-    result(out => RayscalNative.GetRayCollisionSphere(out, NativeCopies.ray(ray), NativeCopies.vector3(center), radius))
-
-  def box(ray: Ray, box: BoundingBox)(using Zone): RayCollision =
-    result(out => RayscalNative.GetRayCollisionBox(out, NativeCopies.ray(ray), NativeCopies.boundingBox(box)))
-
-  def triangle(ray: Ray, p1: Vector3, p2: Vector3, p3: Vector3)(using Zone): RayCollision =
-    result(out => RayscalNative.GetRayCollisionTriangle(out, NativeCopies.ray(ray), NativeCopies.vector3(p1), NativeCopies.vector3(p2), NativeCopies.vector3(p3)))
-
-  def quad(ray: Ray, p1: Vector3, p2: Vector3, p3: Vector3, p4: Vector3)(using Zone): RayCollision =
-    result(out => RayscalNative.GetRayCollisionQuad(out, NativeCopies.ray(ray), NativeCopies.vector3(p1), NativeCopies.vector3(p2), NativeCopies.vector3(p3), NativeCopies.vector3(p4)))
-
-  def model(ray: Ray, model: Model)(using Zone): RayCollision =
-    model.requireLive()
-    result(out => RayscalNative.GetRayCollisionModel(out, NativeCopies.ray(ray), model.ptr))
-
-  def hit(result: RayCollision): Boolean = result._1
-  def distance(result: RayCollision): Float = result._2
-  def point(result: RayCollision)(using Zone): Vector3 = Vector.vector3(result._3, result._4, result._5)
-  def normal(result: RayCollision)(using Zone): Vector3 = Vector.vector3(result._6, result._7, result._8)
-
-  private def result(call: Ptr[RayCollision] => Unit): RayCollision =
+  def sphere(ray: Ray, center: Vector3, radius: Float): RayCollision =
     Zone:
-      val out = stackalloc[RayCollision]()
-      call(out)
-      !out
+      val out = alloc[raw.RayCollision]()
+      RayscalNative.GetRayCollisionSphere(out, NativeMarshal.ray(ray), NativeMarshal.vector3(center), radius)
+      NativeMarshal.readRayCollision(out)
+
+  def box(ray: Ray, box: BoundingBox): RayCollision =
+    Zone:
+      val out = alloc[raw.RayCollision]()
+      RayscalNative.GetRayCollisionBox(out, NativeMarshal.ray(ray), NativeMarshal.boundingBox(box))
+      NativeMarshal.readRayCollision(out)
+
+  def triangle(ray: Ray, p1: Vector3, p2: Vector3, p3: Vector3): RayCollision =
+    Zone:
+      val out = alloc[raw.RayCollision]()
+      RayscalNative.GetRayCollisionTriangle(out, NativeMarshal.ray(ray), NativeMarshal.vector3(p1), NativeMarshal.vector3(p2), NativeMarshal.vector3(p3))
+      NativeMarshal.readRayCollision(out)
+
+  def quad(ray: Ray, p1: Vector3, p2: Vector3, p3: Vector3, p4: Vector3): RayCollision =
+    Zone:
+      val out = alloc[raw.RayCollision]()
+      RayscalNative.GetRayCollisionQuad(out, NativeMarshal.ray(ray), NativeMarshal.vector3(p1), NativeMarshal.vector3(p2), NativeMarshal.vector3(p3), NativeMarshal.vector3(p4))
+      NativeMarshal.readRayCollision(out)
+
+  def model(ray: Ray, model: Model): RayCollision =
+    model.requireLive()
+    Zone:
+      val out = alloc[raw.RayCollision]()
+      RayscalNative.GetRayCollisionModel(out, NativeMarshal.ray(ray), model.ptr)
+      NativeMarshal.readRayCollision(out)
+
+  def hit(result: RayCollision): Boolean = result.hit
+  def distance(result: RayCollision): Float = result.distance
+  def point(result: RayCollision): Vector3 = result.point
+  def normal(result: RayCollision): Vector3 = result.normal

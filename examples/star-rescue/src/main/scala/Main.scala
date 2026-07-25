@@ -367,7 +367,7 @@ private object StarRescueRenderer:
       case GameMode.Playing => drawGame(game)
       case GameMode.GameOver => drawGameOver(game)
 
-  private def drawBackground(game: StarRescueGame, offsetX: Float, offsetY: Float)(using Zone): Unit =
+  private def drawBackground(game: StarRescueGame, offsetX: Float, offsetY: Float): Unit =
     Drawing.clear(Colors.rgba(8, 11, 28, 255))
     Shapes.circle((Width - 80 + offsetX).round, (70 + offsetY).round, 180.0f, Colors.rgba(16, 29, 64, 255))
     Shapes.circle((120 + offsetX).round, (Height - 50 + offsetY).round, 220.0f, Colors.rgba(38, 18, 60, 255))
@@ -375,7 +375,7 @@ private object StarRescueRenderer:
       val size = math.max(1, star.size.round)
       Shapes.rectangle((star.x + offsetX).round, (star.y + offsetY).round, size, size, Colors.rgba(210, 230, 255, 255))
 
-  private def drawPlayer(game: StarRescueGame, offsetX: Float, offsetY: Float)(using Zone): Unit =
+  private def drawPlayer(game: StarRescueGame, offsetX: Float, offsetY: Float): Unit =
     val player = game.player
     val nose = Vector.vector2(player.x + offsetX, player.y - 28.0f + offsetY)
     val left = Vector.vector2(player.x - 22.0f + offsetX, player.y + 22.0f + offsetY)

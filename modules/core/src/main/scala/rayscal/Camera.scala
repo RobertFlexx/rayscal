@@ -15,36 +15,23 @@ object CameraModes:
   val ThirdPerson: Int = 4
 
 object Cameras:
-  def camera3D(position: Vector3, target: Vector3, up: Vector3, fovy: Float, projection: Int)(using zone: Zone): Camera3D =
-    val _ = zone
-    val camera = stackalloc[Camera3D]()
-    (!camera)._1 = position._1
-    (!camera)._2 = position._2
-    (!camera)._3 = position._3
-    (!camera)._4 = target._1
-    (!camera)._5 = target._2
-    (!camera)._6 = target._3
-    (!camera)._7 = up._1
-    (!camera)._8 = up._2
-    (!camera)._9 = up._3
-    (!camera)._10 = fovy
-    (!camera)._11 = projection
-    !camera
+  def camera3D(position: Vector3, target: Vector3, up: Vector3, fovy: Float, projection: Int): Camera3D =
+    Camera3D(position, target, up, fovy, projection)
 
-  def camera2D(offset: Vector2, target: Vector2, rotation: Float, zoom: Float)(using zone: Zone): Camera2D =
-    val _ = zone
-    val camera = stackalloc[Camera2D]()
-    (!camera)._1 = offset._1
-    (!camera)._2 = offset._2
-    (!camera)._3 = target._1
-    (!camera)._4 = target._2
-    (!camera)._5 = rotation
-    (!camera)._6 = zoom
-    !camera
+  def camera2D(offset: Vector2, target: Vector2, rotation: Float, zoom: Float): Camera2D =
+    Camera2D(offset, target, rotation, zoom)
 
-  def update(camera: Ptr[Camera3D], mode: Int): Unit =
-    Raylib.UpdateCamera(camera, mode)
-
-  def updatePro(camera: Ptr[Camera3D], movement: Vector3, rotation: Vector3, zoom: Float): Unit =
+  /** Updates a camera with raylib's built-in control mode and returns the new value. */
+  def update(camera: Camera3D, mode: Int): Camera3D =
     Zone:
-      RayscalNative.UpdateCameraPro(camera, NativeCopies.vector3(movement), NativeCopies.vector3(rotation), zoom)
+      val native = alloc[raw.Camera3D]()
+      NativeMarshal.writeCamera3D(native, camera)
+      Raylib.UpdateCamera(native, mode)
+      NativeMarshal.readCamera3D(native)
+
+  def updatePro(camera: Camera3D, movement: Vector3, rotation: Vector3, zoom: Float): Camera3D =
+    Zone:
+      val native = alloc[raw.Camera3D]()
+      NativeMarshal.writeCamera3D(native, camera)
+      RayscalNative.UpdateCameraPro(native, NativeMarshal.vector3(movement), NativeMarshal.vector3(rotation), zoom)
+      NativeMarshal.readCamera3D(native)
