@@ -33,13 +33,15 @@ jobs:
             git \
             libasound2-dev \
             libgl1-mesa-dev \
+            libgl1-mesa-dri \
             libglu1-mesa-dev \
             libx11-dev \
             libxcursor-dev \
             libxi-dev \
             libxinerama-dev \
             libxrandr-dev \
-            pkg-config
+            pkg-config \
+            xvfb
 
       - name: Build raylib
         run: |
@@ -52,5 +54,6 @@ jobs:
       - name: Public API FFI safety check
         run: ./.github/check-ffi-safety.sh
 
+      # abiCheck/run needs a display; headless runners provide one via Xvfb.
       - name: Validate bindings and link examples
-        run: sbt check
+        run: xvfb-run -a sbt check
