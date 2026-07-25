@@ -13,7 +13,7 @@ def requireSupportedRaylib(): Unit = {
     case _ => false
   }
   if (!supported)
-    sys.error(s"Unsupported raylib version $version; rayscal 0.1 targets raylib 6.0.x")
+    sys.error(s"Unsupported raylib version $version; rayscal 0.2 targets raylib 6.0.x")
 }
 
 def raylibLinkingOptions: Seq[String] = {
