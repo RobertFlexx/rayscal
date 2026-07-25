@@ -60,7 +60,7 @@ from source.
 ## Building rayscal itself
 
 ```bash
-git clone https://github.com/rayscal/rayscal.git
+git clone https://github.com/RobertFlexx/rayscal.git
 cd rayscal
 ```
 
