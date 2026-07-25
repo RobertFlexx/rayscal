@@ -57,7 +57,7 @@ pkg-config --modversion raylib
 If you get `6.0` or `6.0.0`, you're good. If your distro only has 5.x, build
 from source.
 
-## Building rayscl itself
+## Building rayscal itself
 
 ```bash
 git clone https://github.com/rayscal/rayscal.git
