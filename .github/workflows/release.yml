@@ -37,13 +37,15 @@ jobs:
             git \
             libasound2-dev \
             libgl1-mesa-dev \
+            libgl1-mesa-dri \
             libglu1-mesa-dev \
             libx11-dev \
             libxcursor-dev \
             libxi-dev \
             libxinerama-dev \
             libxrandr-dev \
-            pkg-config
+            pkg-config \
+            xvfb
 
       - name: Build raylib
         run: |
@@ -53,8 +55,9 @@ jobs:
           sudo cmake --install /tmp/raylib/build
           sudo ldconfig
 
+      # abiCheck/run needs a display; headless runners provide one via Xvfb.
       - name: Validate bindings
-        run: sbt check
+        run: xvfb-run -a sbt check
 
       - name: Build native binary
         run: sbt "helloWindow/nativeLink"
